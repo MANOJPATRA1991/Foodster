@@ -184,8 +184,9 @@ function initMap() {
     polygon.getPath().addListener('set_At', searchWithinPolygon);
     polygon.getPath().addListener('insert_at', searchWithinPolygon);
   });
+}
 
-  // This function populates the infowindow when the marker is clicked. We'll only allow
+// This function populates the infowindow when the marker is clicked. We'll only allow
   // one infowindow which will open at the marker that is clicked, and populate based
   // on that markers position.
   function populateInfoWindow(marker, infowindow){
@@ -392,8 +393,8 @@ function initMap() {
             atleastOne = true;
             var infowindow = new google.maps.InfoWindow({
               content: durationText + 'away, ' + distanceText +
-                "<div>" + "<input type='button' value='View Route' onclick='displayDirections(" + '"' +
-                origins[i] + '"' + ")'>" + "</div>"
+                "<div>" + "<input type='button' value='View Route' onclick='displayDirections(\"" +
+                origins[i] + "\")'>" + "</div>"
             });
             infowindow.open(map, markers[i]);
             markers[i].infowindow = infowindow;
@@ -414,7 +415,7 @@ function initMap() {
   // on the map.
   function displayDirections(origin){
     hideListings();
-    var directionsService = new goole.maps.DirectionsService;
+    var directionsService = new google.maps.DirectionsService;
     // Get the destination address from the user entered value.
     var destinationAddress = document.getElementById('search-within-time-text').value;
     // Get mode again from the user entered value.
@@ -440,4 +441,3 @@ function initMap() {
       }
     });
   }
-}
