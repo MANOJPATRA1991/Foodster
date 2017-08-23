@@ -16,19 +16,23 @@ body {
 
 .menu-row {
 }
+
 input {
   font-size: 12px;
 }
+
 h1 {
   color: #525454;
   font-size: 22px;
   margin: 0 0 10px 0;
   text-align: center;
 }
+
 #hide-listings,
 #show-listings {
   width: 49%;
 }
+
 hr {
   background: #D0D7D9;
   height: 1px;
@@ -84,7 +88,6 @@ hr {
   -moz-box-shadow: 0 2px 6px rgba(0,0,0,.3);
   box-shadow: 0 2px 6px rgba(0,0,0,.3);
 }
-
 
 .head-box h1{
   text-align: left;
@@ -374,9 +377,7 @@ img#photo-img {
   margin-left: 15px;
 }
 
-
-
-.controls{
+.controls {
     width:50px;
     display:block;
     font-size:11px;
@@ -416,4 +417,9 @@ img#photo-img {
 
 #title {
   color: #fff;
+}
+
+#venue-detail-menu {
+  font-size: 22px;
+  float: right;
 }

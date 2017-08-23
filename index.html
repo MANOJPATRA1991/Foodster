@@ -48,12 +48,13 @@
       </div>
 
       <div id="menu-panel">
-          <span id='venue-detail-menu' style='font-size: 20px; float: right;' class='glyphicon glyphicon-chevron-up' ></span>
-          <div id="four-square"></div>
+        <span id='venue-detail-menu' class='glyphicon glyphicon-chevron-up'></span>
+        <span id='menu-panel-heading'></span>
+        <div id="four-square"></div>
       </div>
 
       <div id="close-photo-panel">
-        <h1><span id="title" class="glyphicon glyphicon-chevron-right"></span></h1>
+        <h1><span class="glyphicon glyphicon-chevron-right"></span></h1>
       </div>
 
       <div id="photo-panel">
@@ -82,55 +83,9 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/knockout/3.4.2/knockout-min.js"></script>
-    <script type="text/javascript" src="app.js"></script>
     <!-- asynchronous loading of Javascript definitions as page renders -->
     <script src="https://maps.googleapis.com/maps/api/js?libraries=places,drawing,geometry&key=AIzaSyAcaVpREgWnMTA-igakVPqULY4DMjjHH-I&v=3&callback=initMap"
     async defer></script>
-    <script>
-      $(document).ready(function(){
-        var open=false;
-        $("#hide-route").click(function(){
-          $(this).text(function(i, text){
-              return text === "Hide Directions" ? "Show Directions" : "Hide Directions";
-          })
-          $(this).toggleClass("btn-danger");
-          $(this).toggleClass("btn-success");
-          if( $("#right-panel").css('visibility') == 'visible'){
-            $("#right-panel").css("visibility", "hidden");
-            $("#right-panel").css("height", 0);
-          }else {
-            $("#right-panel").css("visibility", "visible");
-            $("#right-panel").css("height", "auto");
-          }
-          
-        });
-        $("#togglemenu").hide();
-        $(".menu-bar").click(function(){
-            if(!open){
-              $("#title").text("Search");
-              $(".head-box").animate({
-                width: 340
-              }, 500);
-              $(this).toggleClass("change");
-              setTimeout(function() { 
-                  $("#togglemenu").slideToggle(500);
-              }, 500);
-              open = true;
-            }else if(open){
-              $("#togglemenu").find("input[type=text]").val("");
-              $("#togglemenu").slideToggle(500);
-              $(this).toggleClass("change");
-              setTimeout(function() {
-                $(".head-box").animate({
-                  width: 40
-                }, 500);    
-              }, 500);
-              $("#title").text("");
-              open = false;
-            }
-        });
-      });
-
-    </script>
+    <script type="text/javascript" src="app.js"></script>
   </body>
 </html>

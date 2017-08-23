@@ -1,6 +1,8 @@
 // Create a variable for the map
 var map;
 
+var isOpen = false;
+
 // Create a blank array for listing all the markers
 var markers = [];
 
@@ -174,21 +176,22 @@ function initMap() {
     self.query = ko.observable('');
     self.clearValue = function() {       
        self.query('');
+       showListings();
     };
 
     // An array of locations
     var locations = [
-        {title: 'Toscano', location: {lat: 12.971959955310272, lng: 77.59611166416713}},
-        {title: 'Shiro', location: {lat: 12.971735852008035, lng: 77.5964362146767}},
-        {title: 'Café Noir', location: {lat: 12.972061, lng: 77.596014}},
-        {title: 'J W Kitchen', location: {lat: 12.972435476155981, lng: 77.59469034577258}},
+        {title: 'Toscano', location: {lat: 12.937074, lng: 77.585257}},
+        {title: 'McDonald\'s Family Restaurant', location: {lat: 12.975947888116648, lng: 77.59833873337735}},
+        {title: 'Hotel Shalimar Bar and Restaurant', location: {lat: 12.978237128484729, lng: 77.63729413423935}},
+        {title: 'J W Kitchen', location: {lat: 12.972084, lng: 77.594908}},
         {title: 'Smoke House Deli', location: {lat: 12.9716781033626, lng: 77.59829956419803}},
-        {title: 'Bengaluru Baking Co.', location: {lat: 12.97176936138599, lng: 77.59508204947852}},
+        {title: 'Peace Restaurant', location: {lat: 12.961816690417804, lng: 77.59796942343216}},
         {title: "Sunny\'s\'", location: {lat: 12.972027516492824, lng: 77.59850100554686}},
         {title: 'Airlines Hotel', location: {lat: 12.973048836038515, lng: 77.60000061317432}},
         {title: 'Truffles - Ice & Spice', location: {lat: 12.971556788840994, lng: 77.60106935122289}},
         {title: "Harima", location: {lat: 12.96741309690568, lng: 77.6004159450531}},
-        {title: 'Kebabs & Kurries', location: {lat: 12.966979031286325, lng: 77.59579270844688}}   
+        {title: 'Imperial Restaurant', location: {lat: 12.982122329627389, lng: 77.6031788201695}}   
       ];
 
     markers = new Markers(locations);
@@ -206,7 +209,7 @@ function initMap() {
     self.locations = ko.dependentObservable(function() {
         var search = self.query().toLowerCase();
         return ko.utils.arrayFilter(locations, function(location) {
-            if(search !== "" && location.title.toLowerCase().indexOf(search) >= 0){
+            if(self.query() !== "" && location.title.toLowerCase().indexOf(search) >= 0){
               showMarker(locations.indexOf(location), largeInfowindow);
             }
             return location.title.toLowerCase().indexOf(search) >= 0;
@@ -233,8 +236,53 @@ function initMap() {
     $("#left-panel").css('z-index', 300);
   });
 
+  $("#hide-route").click(function(){
+    $(this).text(function(i, text){
+        return text === "Hide Directions" ? "Show Directions" : "Hide Directions";
+    })
+    $(this).toggleClass("btn-danger");
+    $(this).toggleClass("btn-success");
+    if( $("#right-panel").css('visibility') == 'visible'){
+      $("#right-panel").css("visibility", "hidden");
+      $("#right-panel").css("height", 0);
+    }else {
+      $("#right-panel").css("visibility", "visible");
+      $("#right-panel").css("height", "auto");
+    }
+  });
+  $("#togglemenu").hide();
+
+  $(".menu-bar").click(function(){
+      if(!isOpen){
+        $("#menu-panel").css("visibility", "hidden");
+        $("#photo-panel").css({"visibility": "hidden", "width": 0});
+        $("#close-photo-panel").css({"visibility": "hidden", "width": 0});
+        $("#left-panel").css({"visibility": "hidden"});
+        $("#title").text("Search");
+        $(".head-box").animate({
+          width: 340
+        }, 500);
+        $(this).toggleClass("change");
+        setTimeout(function() { 
+            $("#togglemenu").slideToggle(500);
+        }, 500);
+        isOpen = true;
+      }else if(open){
+        $("#togglemenu").slideToggle(500);
+        $(this).toggleClass("change");
+        setTimeout(function() {
+          $(".head-box").animate({
+            width: 40
+          }, 500);    
+        }, 500);
+        $("#title").text("");
+        isOpen = false;
+      }
+  });
+
   // Get tips
   $(document).on('click', '#get-tips', function(){
+    closeMenu(true);
     $("#menu-panel").css("visibility", "hidden");
     $("#photo-panel").css({"visibility": "hidden", "width": 0});
     $("#close-photo-panel").css({"visibility": "hidden", "width": 0});
@@ -250,19 +298,22 @@ function initMap() {
 
   // Get more information
   $(document).on('click', '#marker-more', function(){
-      $("#photo-panel").css({"visibility": "hidden", "width": 0});
-      $("#close-photo-panel").css({"visibility": "hidden", "width": 0});
-      $("#left-panel").css({"visibility": "hidden"});
-      $("#menu-panel").css({"top": "0px", "overflow-y": "auto", 'z-index': 100, "visibility": "visible"});
-      $("#menu-panel").animate({
-        height: '80%'
-      }, 500);
-      isClosed = false;
-      loadData();
+    closeMenu(true);
+    $("#four-square").empty();
+    $("#photo-panel").css({"visibility": "hidden", "width": 0});
+    $("#close-photo-panel").css({"visibility": "hidden", "width": 0});
+    $("#left-panel").css({"visibility": "hidden"});
+    $("#menu-panel").css({"top": "0px", "overflow-y": "auto", 'z-index': 100, "visibility": "visible"});
+    $("#menu-panel").animate({
+      height: '80%'
+    }, 500);
+    isClosed = false;
+    loadData();
   });
 
   // Get images
   $(document).on('click', '#get-images', function(){
+    closeMenu(true);
     $("#left-panel").css({"visibility": "hidden"});
     $("#menu-panel").css("visibility", "hidden");
     $('#close-photo-panel').css({"visibility": "visible", 'right': 0, 'width': 0});
@@ -277,6 +328,8 @@ function initMap() {
       right: '220px'
     }, {duration: 500, queue: false});
     isClosedPhoto = false;
+    $("image-square").empty();
+    $("#modalImages .modal-body").empty();
     loadImages();
   });
 
@@ -344,6 +397,24 @@ function initMap() {
 }
 
 /**
+ * This function closes panels except the selected panel
+ * @param {Boolean} openI
+ */
+function closeMenu(openI){
+  if(isOpen === openI){
+    $("#togglemenu").slideToggle(500);
+    $(".menu-bar").toggleClass("change");
+    setTimeout(function() {
+      $(".head-box").animate({
+        width: 40
+      }, 500);    
+    }, 500);
+    $("#title").text("");
+    isOpen = false;
+  }
+}
+
+/**
  * This function populates the infowindow when the marker is clicked.
  * @param {Object} marker The marker for which to open the infowindow
  * @param {Object} infowindow The infowindow instance to open
@@ -403,9 +474,6 @@ function hideElems(){
   $("#photo-panel").css({"visibility": "hidden", "width": 0});
   $("#close-photo-panel").css({"visibility": "hidden", "width": 0});
   $("#left-panel").css({"visibility": "hidden"});
-  $('#four-square').empty();
-  $("#image-square").empty();
-  $("#venue-tips").empty();
 }
 
 /**
@@ -542,9 +610,12 @@ function displayDirections(origin){
 function loadData(){
   var fourSquareUrl = fourSquare();
   var $fourSquare = $("#four-square");
+  var venue = {};
   $.getJSON(fourSquareUrl)
     .done(function(data){
-      var venue = data.response.venues[0];
+      if(data.response.venues !== null && data.response.venues !== undefined){
+        venue = data.response.venues[0];
+      }
       getVenueData(venue);
     })
     .fail(function(err){
@@ -558,10 +629,15 @@ function loadData(){
  */
 function loadImages(){
   var $imageSquare = $("#image-square");
+  $imageSquare.empty();
+  $(".modal-body").empty();
   var fourSquareUrl = fourSquare();
+  var venue = {};
   $.getJSON(fourSquareUrl)
     .done(function(data){
-      var venue = data.response.venues[0];
+      if(data.response.venues !== null && data.response.venues !== undefined){
+        venue = data.response.venues[0];
+      }
       venueDetails(venue.id, 'image');
     })
     .fail(function(err){
@@ -576,9 +652,12 @@ function loadImages(){
 function loadTips(){
   var $venueTips = $("#venue-tips");
   var fourSquareUrl = fourSquare();
+  var venue = {};
   $.getJSON(fourSquareUrl)
     .done(function(data){
-      var venue = data.response.venues[0];
+      if(data.response.venues !== null && data.response.venues !== undefined){
+        venue = data.response.venues[0];
+      }
       venueTips(venue.id);
     })
     .fail(function(err){
@@ -602,8 +681,10 @@ function fourSquare(){
   fourSquareUrl += '?' + $.param({
     'v': '20170820',
     'll': lat_lng,
-    'client_id': '41PGT0MW5WP2YLYOMO5GVVLOSXY31V1CP45PCHAWQDNRHI4I',
-    'client_secret': '13ETNO1CLGHIOTSPJCUWX0KJ2IE1M3BBW5ZM0PN5530HWMSZ'
+    // 'client_id': '41PGT0MW5WP2YLYOMO5GVVLOSXY31V1CP45PCHAWQDNRHI4I',
+    'client_id': 'F1E2HZDPZGHKNSK54DWPNAPW3ADHKL0V0IBHLD1ZN1KPMJNG',
+    // 'client_secret': '13ETNO1CLGHIOTSPJCUWX0KJ2IE1M3BBW5ZM0PN5530HWMSZ'
+    'client_secret': '2HTYTSWFTZUS144ABHWAHAQLVCGQMHTKIONLROWJHOVJCOOF'
   });
   return fourSquareUrl;
 }
@@ -625,11 +706,10 @@ function getVenueData(venue){
   var venue_facebook = '';
   var venue_twitter = '';
   var icon = '';
-  var ratings = '';
-  var ratingColor = '';
   var facebook_name = '';
   var venueId = venue.id;
   var innerHTML = "";
+  $fourSquare.html("");
   if(venue !== null || venue !== undefined){
     venue_name = venue.name;
     if(venue.location.formattedAddress){
@@ -644,17 +724,14 @@ function getVenueData(venue){
     if(venue.url !== null && venue.url !== undefined){
       venue_url = venue.url;
     }
-    
-    if(venue.rating !== null && venue.rating !== undefined){
-      ratingColor = venue.ratingColor;
-      ratings = venue.rating;
-    }
 
     if(venue.contact.formattedPhone !== null && venue.contact.formattedPhone !== undefined){
       venue_phone = venue.contact.formattedPhone;
     }
     if(venue.contact.facebook !== null && venue.contact.facebook !== undefined){
       venue_facebook = venue.contact.facebook;
+    }
+    if(venue.contact.facebookUsername !== null && venue.contact.facebookUsername !== undefined){
       facebook_name = venue.contact.facebookUsername;
     }
     if(venue.contact.twitter !== null && venue.contact.twitter !== undefined){
@@ -663,12 +740,15 @@ function getVenueData(venue){
     if(venue.categories[0].icon !== null && venue.categories[0].icon !== undefined){
       icon = venue.categories[0].icon.prefix + "bg_100" + venue.categories[0].icon.suffix;
     }
+  }else{
+    $fourSquare.append("<div><p>No data found.</p></div>");
+    return;
   }
 
   $fourSquare.text("");
 
-  heading.html("<div class='main-title'><img style='float:left; margin-right: 4px;' src='" + icon + "'><h2 style='padding-right: 20px;' id='venue_name' data-id='" + venueId + "'>"
-   + venue_name + "</h2><div><h4><span style='background-color:" + ratingColor + ";' class='label'>" + ratings + "</span></h4></div></div><div class='clearfix'></div>"); 
+  heading.html("<div class='main-title'><img style='float:left; margin-right: 4px;' src='" + icon + "'><h2 style='margin-bottom: 0; padding-right: 20px;' id='venue_name' data-id='" + venueId + "'>"
+   + venue_name + "</h2></div><div class='clearfix'></div>"); 
   
   if(venue_url){
     innerHTML += "<p class='venue-p'><span class='icon glyphicon glyphicon-globe'></span> <a href='venue_url" + "'>" + venue_url + "</a></p>";
@@ -683,7 +763,7 @@ function getVenueData(venue){
   if(venue_phone){
     innerHTML += "<p class='venue-p'><span class='icon glyphicon glyphicon-phone'></span> " + venue_phone +"</p>";
   }
-  if(venue_facebook){
+  if(venue_facebook && facebook_name){
     innerHTML += "<p class='venue-p'><span class='icon'><i class='fa fa-facebook' aria-hidden='true'></i></span><a href='https://fb.com/" + venue_facebook + "'> #" + facebook_name +"</a></p>";
   }
   if(venue_twitter){
@@ -701,20 +781,24 @@ function getVenueData(venue){
  */
 function venueDetails(venueId, choice){
   var fourSquareVenue = "https://api.foursquare.com/v2/venues/" + venueId;
-    fourSquareVenue += '?' + $.param({
-      'v': '20170820',
-      'client_id': '41PGT0MW5WP2YLYOMO5GVVLOSXY31V1CP45PCHAWQDNRHI4I',
-      'client_secret': '13ETNO1CLGHIOTSPJCUWX0KJ2IE1M3BBW5ZM0PN5530HWMSZ'
-    });
-    var result = '';
-    $.getJSON(fourSquareVenue)
-    .done(function(data){
+  fourSquareVenue += '?' + $.param({
+    'v': '20170820',
+    // 'client_id': '41PGT0MW5WP2YLYOMO5GVVLOSXY31V1CP45PCHAWQDNRHI4I',
+    'client_id': 'F1E2HZDPZGHKNSK54DWPNAPW3ADHKL0V0IBHLD1ZN1KPMJNG',
+    // 'client_secret': '13ETNO1CLGHIOTSPJCUWX0KJ2IE1M3BBW5ZM0PN5530HWMSZ'
+    client_secret: '2HTYTSWFTZUS144ABHWAHAQLVCGQMHTKIONLROWJHOVJCOOF'
+  });
+  var result = '';
+  $.getJSON(fourSquareVenue)
+  .done(function(data){
+    if(data.response.venue !== null && data.response.venue !== undefined){
       if(choice === 'data'){
         returnVenue(data.response.venue);
       }else if(choice === 'image'){
         returnVenueImage(data.response.venue);
       }
-    });
+    }
+  });
 }
 
 
@@ -726,13 +810,18 @@ function venueTips(venueId){
   var fourSquareTips = "https://api.foursquare.com/v2/venues/" + venueId + "/tips";
   fourSquareTips += '?' + $.param({
     'v': '20170820',
-    'client_id': '41PGT0MW5WP2YLYOMO5GVVLOSXY31V1CP45PCHAWQDNRHI4I',
-    'client_secret': '13ETNO1CLGHIOTSPJCUWX0KJ2IE1M3BBW5ZM0PN5530HWMSZ'
+    // 'client_id': '41PGT0MW5WP2YLYOMO5GVVLOSXY31V1CP45PCHAWQDNRHI4I',
+    'client_id': 'F1E2HZDPZGHKNSK54DWPNAPW3ADHKL0V0IBHLD1ZN1KPMJNG',
+    // 'client_secret': '13ETNO1CLGHIOTSPJCUWX0KJ2IE1M3BBW5ZM0PN5530HWMSZ'
+    'client_secret': '2HTYTSWFTZUS144ABHWAHAQLVCGQMHTKIONLROWJHOVJCOOF'
   });
   var result = '';
   $.getJSON(fourSquareTips)
   .done(function(data){
     returnVenueTips(data.response.tips.items);
+  })
+  .fail(function(){
+    returnVenueTips("Error");
   });
 }
 
@@ -749,53 +838,69 @@ function returnVenue(data){
   var photos = [];
   var $fourSquare = $('#four-square');
   var innerHTML = '';
-  if(venueDetails.stats !== null && venueDetails.stats !== undefined){
-      checkins = venueDetails.stats.checkinsCount ? venueDetails.stats.checkinsCount : "N/A";
-      users = venueDetails.stats.usersCount ? venueDetails.stats.usersCount : "N/A";
-      visits = venueDetails.stats.visitsCount ? venueDetails.stats.visitsCount : "N/A";
-    }
-  if(venueDetails.hours !== null && venueDetails.hours !== undefined){
-      hours.status = venueDetails.hours.status;
-      hours.isOpen = venueDetails.hours.isOpen;
-      hours.time = venueDetails.hours.timeframes[0].days + ": " + 
-                    venueDetails.hours.timeframes[0].open[0].renderedTime;
-    }
+  var rating = "";
+  if(venueDetails !== null && venueDetails !== undefined){
+    if(venueDetails.stats !== null && venueDetails.stats !== undefined){
+        checkins = venueDetails.stats.checkinsCount ? venueDetails.stats.checkinsCount : "N/A";
+        users = venueDetails.stats.usersCount ? venueDetails.stats.usersCount : "N/A";
+        visits = venueDetails.stats.visitsCount ? venueDetails.stats.visitsCount : "N/A";
+      }
+    if(venueDetails.hours !== null && venueDetails.hours !== undefined){
+        hours.status = venueDetails.hours.status;
+        hours.isOpen = venueDetails.hours.isOpen;
+        hours.time = venueDetails.hours.timeframes[0].days + ": " + 
+                      venueDetails.hours.timeframes[0].open[0].renderedTime;
+      }
 
-  if(checkins){
-    innerHTML = "<ul class='list-group'><li class='venue-p list-group-item'><span class='badge'>" + checkins + "</span>Checkins </li>";
-  }
-  if(users){
-    innerHTML += "<li class='venue-p list-group-item'><span class='badge'>" + users + "</span>Users </li>";
-  }
-  if(visits){
-    innerHTML += "<li class='venue-p list-group-item'><span class='badge'>" + visits + "</span>Visits </li></ul>";
-  }
-  if(hours){
-    if(hours.status){
-      innerHTML += "<p class='venue-p'><span class='icon glyphicon glyphicon-time'></span> " +
-        hours.status + " (<a id='show-more' href='#'>show more</a>" + ") </p><p id='time'></p>";
+    if(venueDetails.ratingColor){
+      rating = "<span class='label' style='margin-right: 10px; background-color: #" + venueDetails.ratingColor + ";'>";
     }
-    if(hours.isOpen){
-      innerHTML += "<p class='venue-p' style='color: green;'><b>Open now </b></p>";
-    }else{
-      innerHTML += "<p class='venue-p' style='color: red;'><b>Closed </b></p>";
+    if(venueDetails.rating){
+      rating += venueDetails.rating + "</span>";
     }
-  }
-  $fourSquare.append(innerHTML);
-  if(hours.time){
+    if(venueDetails.ratingSignals){
+      rating += "<span style='font-size: 12px;'><b><em>" + venueDetails.ratingSignals + " Reviews</em></b></span>";
+    }
+    $(".main-title h2").after(rating);
+
+    if(checkins){
+      innerHTML = "<ul class='list-group'><li class='venue-p list-group-item'><span class='badge'>" + checkins + "</span>Checkins </li>";
+    }
+    if(users){
+      innerHTML += "<li class='venue-p list-group-item'><span class='badge'>" + users + "</span>Users </li>";
+    }
+    if(visits){
+      innerHTML += "<li class='venue-p list-group-item'><span class='badge'>" + visits + "</span>Visits </li></ul>";
+    }
+    if(hours){
+      if(hours.status){
+        innerHTML += "<p class='venue-p'><span class='icon glyphicon glyphicon-time'></span> " +
+          hours.status + " (<a id='show-more' href='#'>show more</a>" + ") </p><p id='time'></p>";
+      }
+      if(hours.isOpen){
+        innerHTML += "<p class='venue-p' style='color: green;'><b>Open now </b></p>";
+      }else{
+        innerHTML += "<p class='venue-p' style='color: red;'><b>Closed </b></p>";
+      }
+    }
+    $fourSquare.append(innerHTML);
+    $("#time").hide();
+    if(hours.time){
       $("#time").text(" " + hours.time + " ");
     }else{
       $('#time').text(' No info available.');
     }
-  $('#time').hide();
-  $(document).on('click', '#show-more', function(){
-    $('#time').slideToggle();
-    if($('#show-more').text() == "show more"){
-      $('#show-more').text("show less");
-    }else{
-      $('#show-more').text("show more");
-    }
-  });
+    $("#show-more").click(function(){
+      $('#time').slideToggle();
+      if($('#show-more').text() === "show more"){
+        $('#show-more').text("show less");
+      }else if($('#show-more').text() === "show less"){
+        $('#show-more').text("show more");
+      }
+    });
+  }else{
+    $fourSquare.append("<div><p>No time records found.</p></div>");
+  }
 }
 
 /**
@@ -807,11 +912,11 @@ function returnVenueImage(data){
   var images = [];
   var $imageSquare = $("#image-square");
   var innerHTML = '';
-  var $modal = $('.modal-body');
   var modalHTML = '';
-    if(venueDetails.photos.groups.length !== 0){
-      images = venueDetails.photos.groups[0].items;
-    }
+  $imageSquare.html("");
+  if(venueDetails.photos.groups.length !== 0){
+    images = venueDetails.photos.groups[0].items;
+  }
   innerHTML = '<div class="image-row row">';
   if(images.length !== 0){
     $.each(images, function(i, image){
@@ -819,8 +924,8 @@ function returnVenueImage(data){
         '<img src="' + image.prefix + '171x180' + image.suffix + '" alt="image-' + i + '"></a></div>';
     });
     innerHTML += '</div>';
-    $imageSquare.append(innerHTML);
-    $(document).on('click', '.col-xs-12 .thumbnail img', function(){
+    $imageSquare.html(innerHTML);
+    $('.col-xs-12 .thumbnail img').click(function(){
       var index = $(this).parents('.col-xs-12').index();
       var src = $(this).attr('src');
       src = src.replace('171x180', '960x720');
@@ -833,54 +938,55 @@ function returnVenueImage(data){
       modalHTML += '</div>';
       $('#modalImages').modal();
       $('#modalImages').on('shown.bs.modal', function(){
-          $modal.html(modalHTML);
+          $('#modalImages .modal-body').html(modalHTML);
           $('button.controls').trigger('click');
       });
       $('#modalImages').on('hidden.bs.modal', function(){
-          $modal.html('');
+          $('#modalImages .modal-body').html("");
       });
     });
   }else{
     innerHTML = '<div class="col-xs-12"><p class="thumbnail">No images found in the database.</p></div></div>';
-    $imageSquare.append(innerHTML);
+    $imageSquare.html(innerHTML);
   }
-
-  $(document).on('click', 'button.controls', function(){
-    var index = $(this).data('index');
-    var src = $('.image-row .col-xs-12:nth-child('+ index +') .thumbnail img').attr('src');
-    if(src){
-      src = src.replace('171x180', '960x720');
-    }
-    $('.modal-body img').fadeOut('slow', function () {
-        $(this).attr('src', src);
-        $(this).fadeIn(1000);
-    });
-    var newPrevIndex = parseInt(index) - 1;
-    var newNextIndex = parseInt(newPrevIndex) + 2;
-     
-    if($(this).hasClass('prev')){
-        $(this).data('index', newPrevIndex);
-        $('button.next').data('index', newNextIndex);
-    }else{
-        $(this).data('index', newNextIndex);
-        $('button.prev').data('index', newPrevIndex);
-    }
-    var total = images.length + 1;
-
-    //hide next button
-    if(newNextIndex === total){
-        $('button.next').hide();
-    }else{
-        $('button.next').show();
-    }
-    //hide previous button
-    if(newPrevIndex === 0){
-        $('button.prev').hide();
-    }else{
-        $('button.prev').show();
-    }
-  });
 } 
+
+// On click event for prev and next buttons of the image modal
+$(document).on('click', 'button.controls', function(){
+  var index = $(this).data('index');
+  var src = $('.image-row .col-xs-12:nth-child('+ index +') .thumbnail img').attr('src');
+  if(src){
+    src = src.replace('171x180', '960x720');
+  }
+  $('.modal-body img').attr('src', src);
+  $('.modal-body img').fadeOut('slow', function () {
+    $(this).fadeIn(3000);
+  });
+  var newPrevIndex = parseInt(index) - 1;
+  var newNextIndex = parseInt(newPrevIndex) + 2;
+   
+  if($(this).hasClass('prev')){
+      $(this).data('index', newPrevIndex);
+      $('button.next').data('index', newNextIndex);
+  }else{
+      $(this).data('index', newNextIndex);
+      $('button.prev').data('index', newPrevIndex);
+  }
+  var total = $(document).find('.image-row .col-xs-12').length + 1;
+
+  //hide next button
+  if(newNextIndex === total){
+      $('button.next').hide();
+  }else{
+      $('button.next').show();
+  }
+  //hide previous button
+  if(newPrevIndex === 0){
+      $('button.prev').hide();
+  }else{
+      $('button.prev').show();
+  }
+});
 
 /**
  * This is a helper function to retrieve user tips
@@ -889,16 +995,18 @@ function returnVenueImage(data){
 function returnVenueTips(data){
   var $venueTips = $("#venue-tips");
   var innerHTML = '';
-  $.each(data, function(index, value){
-    innerHTML = '<div class="media">' + '<div class="media-left">' +
-        '<img src="'+ value.user.photo.prefix + "100x100" + value.user.photo.suffix + 
-        '" class="media-object" style="width:100px">' +
-        '</div><div class="media-body"><h4 class="media-heading"><b>' + 
-        (value.user.firstName ? value.user.firstName : "") + " " + 
-        (value.user.lastName ? value.user.lastName : "") +'</b></h4>' +
-        '<p><em>' + value.text + '</em></p></div></div><hr>';
-    $venueTips.append(innerHTML);
-  });
+  if(data && typeof data === 'object' && data.constructor === Array){
+    $.each(data, function(index, value){
+      innerHTML = '<div class="media">' + '<div class="media-left">' +
+          '<img src="'+ value.user.photo.prefix + "100x100" + value.user.photo.suffix + 
+          '" class="media-object" style="width:100px">' +
+          '</div><div class="media-body"><h4 class="media-heading"><b>' + 
+          (value.user.firstName ? value.user.firstName : "") + " " + 
+          (value.user.lastName ? value.user.lastName : "") +'</b></h4>' +
+          '<p><em>' + value.text + '</em></p></div></div><hr>';
+      $venueTips.append(innerHTML);
+    });
+  }
   if($venueTips.html() === ""){
     $venueTips.html("<div>No user reviews found</div>")
   }
