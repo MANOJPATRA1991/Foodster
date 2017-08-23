@@ -82,7 +82,7 @@ hr {
   background: #fff;
   border-radius: 0;
   top: 41px;
-  bottom: 50px;
+  bottom: 0;
   line-height: 35px;
   padding: 10px 10px 30px 10px;
   text-align: left;
@@ -179,7 +179,7 @@ select.form-control {
 
 #left-panel {
   z-index: 100;
-  bottom: 50px;
+  bottom: 0;
   overflow-x: hidden;
   overflow-y: hidden;
 }
