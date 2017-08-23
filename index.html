@@ -7,7 +7,7 @@
     <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
     <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lobster">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Bree Serif">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Bree+Serif">
     <link rel="stylesheet" type="text/css" href="styles/styles.css">
   </head>
   <body>
@@ -15,11 +15,11 @@
       <div class="head-box">
         <div class="clearfix">
           <h1><span id="title"></span>
-            <span class="menu-bar">
+            <div class="menu-bar">
               <div class="bar1"></div>
               <div class="bar2"></div>
               <div class="bar3"></div>
-            </span>
+            </div>
           </h1>
         </div>
       </div>
@@ -66,7 +66,17 @@
       <div id="left-panel">
         <h2><span id="close-reviews" style='float: right;' class='glyphicon glyphicon-remove'></span>Users Tips</h2>
         <hr>
-        <div id="venue-tips"></div>
+        <div id="venue-tips" data-bind="foreach: $root.tips">
+          <div class="media">
+            <div class="media-left">
+              <img data-bind="attr: {src: src}" class="media-object" style="width:100px">
+            </div>
+            <div class="media-body">
+              <h4 class="media-heading"><b data-bind="text: fullName"></b></h4>
+              <p><em data-bind="text: review"></em></p>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div id="modalImages" class="modal fade" role="dialog">
