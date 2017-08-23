@@ -258,7 +258,7 @@ function initMap() {
         $("#photo-panel").css({"visibility": "hidden", "width": 0});
         $("#close-photo-panel").css({"visibility": "hidden", "width": 0});
         $("#left-panel").css({"visibility": "hidden"});
-        $("#title").text("Search");
+        $("#title").text("Foodster");
         $(".head-box").animate({
           width: 340
         }, 500);

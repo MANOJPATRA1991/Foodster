@@ -1,6 +1,11 @@
+#title {
+  color: #fff;
+  font-family: "Lobster", sans-serif, serif;
+}
+
 html,
 body {
-  font-family: Arial, sans-serif;
+  font-family: "Bree Serif", Arial, sans-serif;
   height: 100%;
   width: 100%;
   overflow-x: hidden;
@@ -147,6 +152,7 @@ select.form-control {
 }
 
 #menu-panel, #left-panel {
+  font-family: "Bree Serif", Arial, sans-serif, serif;
   font-size: 1.2em;
   visibility: hidden;
   position: absolute;
@@ -353,6 +359,7 @@ img#photo-img {
 }
 
 .m-title {
+  font-family: "Bree Serif", Arial, sans-serif, serif;
   font-weight: 400;
   padding: 10px;
   margin: 0;
@@ -413,10 +420,6 @@ img#photo-img {
 
 .image-row {
   margin-top: 20px;
-}
-
-#title {
-  color: #fff;
 }
 
 #venue-detail-menu {
