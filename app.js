@@ -997,13 +997,13 @@ function returnVenueTips(data){
   var innerHTML = '';
   if(data && typeof data === 'object' && data.constructor === Array){
     $.each(data, function(index, value){
-//       innerHTML = '<div class="media">' + '<div class="media-left">' +
-//           '<img src="'+ value.user.photo.prefix + "100x100" + value.user.photo.suffix + 
-//           '" class="media-object" style="width:100px">' +
-//           '</div><div class="media-body"><h4 class="media-heading"><b>' + 
-//           (value.user.firstName ? value.user.firstName : "") + " " + 
-//           (value.user.lastName ? value.user.lastName : "") +'</b></h4>' +
-//           '<p><em>' + value.text + '</em></p></div></div><hr>';
+      innerHTML = '<div class="media">' + '<div class="media-left">' +
+          '<img src="'+ value.user.photo.prefix + "100x100" + value.user.photo.suffix + 
+          '" class="media-object" style="width:100px">' +
+          '</div><div class="media-body"><h4 class="media-heading"><b>' + 
+          (value.user.firstName ? value.user.firstName : "") + " " + 
+          (value.user.lastName ? value.user.lastName : "") +'</b></h4>' +
+          '<p><em>' + value.text + '</em></p></div></div><hr>';
       $venueTips.append(innerHTML);
     });
   }
