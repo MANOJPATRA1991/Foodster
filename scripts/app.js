@@ -1,12 +1,15 @@
 // Create a variable for the map
 var map;
 
-var isOpen = false;
+var isOpenMenu = false;
 
 // Create a blank array for listing all the markers
 var markers = [];
 
 var directionsDisplay;
+
+// This global array is used to store nearby place markers for a default marker
+var nearbyMarkers = [];
 
 // This global polygon variable is to ensure only ONE polgon is rendered
 var polygon = null;
@@ -122,11 +125,11 @@ function initMap() {
 
   // Style the markers to create our listing marker icon.
   var defaultIcon = makeMarkerIcon('0091ff');
-  
+
   // Create a "highlighted location" marker color for when the user
   // mouses over the marker.
   var highlightedIcon = makeMarkerIcon('FFFF24');
-  
+
   /**
    * This function creates default markers
    * @param {Array} locations
@@ -138,12 +141,12 @@ function initMap() {
     for (var i = 0; i < locations.length; i++) {
       var position = locations[i].location;
       var title = locations[i].title;
-      // Create a marker object 
-      var marker = new google.maps.Marker({
-        position: position,
-        title: title,
-        icon: defaultIcon,
-        animation: google.maps.Animation.DROP,
+      // Create a marker object
+        var marker = new google.maps.Marker({
+          position: position,
+          title: title,
+          icon: defaultIcon,
+          animation: google.maps.Animation.DROP,
         id: i
       });
       // Push the marker to our array of markers.
@@ -174,24 +177,99 @@ function initMap() {
   function LocationsViewModel(){
     var self = this;
     self.query = ko.observable('');
-    self.clearValue = function() {       
-       self.query('');
-       showListings();
-    };
+    self.isLoggedIn = ko.observable().subscribeTo("isLoggedIn");
+    self.userName = ko.observable().subscribeTo("currentUser");
 
     // An array of locations
     var locations = [
-        {title: 'Toscano', location: {lat: 12.937074, lng: 77.585257}},
-        {title: 'McDonald\'s Family Restaurant', location: {lat: 12.975947888116648, lng: 77.59833873337735}},
-        {title: 'Hotel Shalimar Bar and Restaurant', location: {lat: 12.978237128484729, lng: 77.63729413423935}},
-        {title: 'J W Kitchen', location: {lat: 12.972084, lng: 77.594908}},
-        {title: 'Smoke House Deli', location: {lat: 12.9716781033626, lng: 77.59829956419803}},
-        {title: 'Peace Restaurant', location: {lat: 12.961816690417804, lng: 77.59796942343216}},
-        {title: "Sunny\'s\'", location: {lat: 12.972027516492824, lng: 77.59850100554686}},
-        {title: 'Airlines Hotel', location: {lat: 12.973048836038515, lng: 77.60000061317432}},
-        {title: 'Truffles - Ice & Spice', location: {lat: 12.971556788840994, lng: 77.60106935122289}},
-        {title: "Harima", location: {lat: 12.96741309690568, lng: 77.6004159450531}},
-        {title: 'Imperial Restaurant', location: {lat: 12.982122329627389, lng: 77.6031788201695}}   
+        {
+          title: 'Toscano',
+          location: {
+            lat: 12.937074,
+            lng: 77.585257
+          },
+          rating: 8.2
+        },
+        {
+          title: 'McDonald\'s Family Restaurant',
+          location: {
+            lat: 12.975947888116648,
+            lng: 77.59833873337735
+          },
+          rating: 5.5
+        },
+        {
+          title: 'Hotel Shalimar Bar and Restaurant',
+          location: {
+            lat: 12.978237128484729,
+            lng: 77.63729413423935
+          },
+          rating: 7.5
+        },
+        {
+          title: 'J W Kitchen',
+          location: {
+            lat: 12.972084,
+            lng: 77.594908
+          },
+          rating: 9
+        },
+        {
+          title: 'Smoke House Deli',
+          location: {
+            lat: 12.9716781033626,
+            lng: 77.59829956419803
+          },
+          rating: 8.8
+        },
+        {
+          title: 'Peace Restaurant',
+          location: {
+            lat: 12.961816690417804,
+            lng: 77.59796942343216
+          },
+          rating: 1
+        },
+        {
+          title: "Sunny\'s\'",
+          location: {
+            lat: 12.972027516492824,
+            lng: 77.59850100554686
+          },
+          rating: 8.3
+        },
+        {
+          title: 'Airlines Hotel',
+          location: {
+            lat: 12.973048836038515,
+            lng: 77.60000061317432
+          },
+          rating: 8.7
+        },
+        {
+          title: 'Truffles - Ice & Spice',
+          location: {
+            lat: 12.971556788840994,
+            lng: 77.60106935122289
+          },
+          rating: 9.2
+        },
+        {
+          title: "Harima",
+          location: {
+            lat: 12.96741309690568,
+            lng: 77.6004159450531
+          },
+          rating: 9.1
+        },
+        {
+          title: 'Imperial Restaurant',
+          location: {
+            lat: 12.982122329627389,
+            lng: 77.6031788201695
+          },
+          rating: 5.7
+        }
       ];
 
     markers = new Markers(locations);
@@ -203,6 +281,23 @@ function initMap() {
       showMarker(locations.indexOf(this), largeInfowindow);
     };
 
+
+    self.values = ko.observable([1, 10]);
+
+
+    self.clearValue = function() {
+       self.query('');
+       self.values([1, 10]);
+       showListings(markers);
+    };
+
+
+    self.searchByRating = ko.observable(false);
+
+    self.activateSearchByRating = function(){
+      self.searchByRating(!self.searchByRating());
+    };
+
     /**
      * An observable variable to filter locations based on an input field
      */
@@ -212,20 +307,57 @@ function initMap() {
             if(self.query() !== "" && location.title.toLowerCase().indexOf(search) >= 0){
               showMarker(locations.indexOf(location), largeInfowindow);
             }
-            return location.title.toLowerCase().indexOf(search) >= 0;
+            if(search){
+              return location.title.toLowerCase().indexOf(search) >= 0;
+            }
+            if(self.searchByRating){
+              return (location.rating >= self.values()[0] && location.rating <= self.values()[1]);
+            }
         });
     }, self);
+
+    // custom binding for slider
+    ko.bindingHandlers.slider = {
+        init: function (element, valueAccessor, allBindings) {
+            var options = allBindings().sliderOptions || {};
+            var $el = $(element);
+            // current value
+            var observable = valueAccessor();
+            options.range = true;
+
+            // function to update ui.values on slide
+            options.slide = function(e, ui) {
+                observable(ui.values);
+            };
+
+            // clean-up logic that runs when slider is removed by Knockout.
+            ko.utils.domNodeDisposal.addDisposeCallback(element, function () {
+                $el.slider("destroy");
+            });
+
+            $el.slider(options);
+        },
+        update: function (element, valueAccessor) {
+            var $el = $(element);
+            var value = ko.unwrap(valueAccessor());
+            $el.slider("values", value);
+        }
+    };
+
+    self.rateRange = ko.computed(function() {
+        return self.values()[0] + " - " + self.values()[1] ;
+    }, self)
   }
 
-  ko.applyBindings(new LocationsViewModel());
+  ko.applyBindings(new LocationsViewModel(), document.getElementById("togglemenu"));
 
-  $('#show-listings').click(function(){showListings()});
+  $('#show-listings').click(function(){showListings(markers)});
   $('#hide-listings').click(function(){
     hideMarkers(markers);
   });
 
   // Display default markers on map on page load
-  showListings();
+  showListings(markers);
 
   // Used to toggle the menu-panel
   var isClosed = false;
@@ -236,24 +368,10 @@ function initMap() {
     $("#left-panel").css('z-index', 300);
   });
 
-  $("#hide-route").click(function(){
-    $(this).text(function(i, text){
-        return text === "Hide Directions" ? "Show Directions" : "Hide Directions";
-    })
-    $(this).toggleClass("btn-danger");
-    $(this).toggleClass("btn-success");
-    if( $("#right-panel").css('visibility') == 'visible'){
-      $("#right-panel").css("visibility", "hidden");
-      $("#right-panel").css("height", 0);
-    }else {
-      $("#right-panel").css("visibility", "visible");
-      $("#right-panel").css("height", "auto");
-    }
-  });
   $("#togglemenu").hide();
 
   $(".menu-bar").click(function(){
-      if(!isOpen){
+      if(!isOpenMenu){
         $("#menu-panel").css("visibility", "hidden");
         $("#photo-panel").css({"visibility": "hidden", "width": 0});
         $("#close-photo-panel").css({"visibility": "hidden", "width": 0});
@@ -263,20 +381,20 @@ function initMap() {
           width: 340
         }, 500);
         $(this).toggleClass("change");
-        setTimeout(function() { 
+        setTimeout(function() {
             $("#togglemenu").slideToggle(500);
         }, 500);
-        isOpen = true;
+        isOpenMenu = true;
       }else if(open){
         $("#togglemenu").slideToggle(500);
         $(this).toggleClass("change");
         setTimeout(function() {
           $(".head-box").animate({
             width: 40
-          }, 500);    
+          }, 500);
         }, 500);
         $("#title").text("");
-        isOpen = false;
+        isOpenMenu = false;
       }
   });
 
@@ -299,7 +417,6 @@ function initMap() {
   // Get more information
   $(document).on('click', '#marker-more', function(){
     closeMenu(true);
-    $("#four-square").empty();
     $("#photo-panel").css({"visibility": "hidden", "width": 0});
     $("#close-photo-panel").css({"visibility": "hidden", "width": 0});
     $("#left-panel").css({"visibility": "hidden"});
@@ -309,6 +426,29 @@ function initMap() {
     }, 500);
     isClosed = false;
     loadData();
+  });
+
+  $(document).on('click', '#get-directions', function(){
+    closeMenu(true);
+    var $getDirections = $('#get-directions');
+    var origin = $getDirections.data('origin');
+    var destination = $getDirections.data('destination');
+    console.log(origin);
+    console.log(destination);
+    $("#menu-panel").css("visibility", "hidden");
+    $("#photo-panel").css({"visibility": "hidden", "width": 0});
+    $("#close-photo-panel").css({"visibility": "hidden", "width": 0});
+    $("#left-panel").css({"visibility": "hidden"});
+    displayDirections(markers[origin].getPosition(), nearbyMarkers[destination].getPosition());
+  });
+
+  $(document).on('click', '#get-places', function(){
+    closeMenu(true);
+    $("#menu-panel").css("visibility", "hidden");
+    $("#photo-panel").css({"visibility": "hidden", "width": 0});
+    $("#close-photo-panel").css({"visibility": "hidden", "width": 0});
+    $("#left-panel").css({"visibility": "hidden"});
+    nearbySearchPlaces();
   });
 
   // Get images
@@ -328,7 +468,6 @@ function initMap() {
       right: '220px'
     }, {duration: 500, queue: false});
     isClosedPhoto = false;
-    $("image-square").empty();
     $("#modalImages .modal-body").empty();
     loadImages();
   });
@@ -368,7 +507,6 @@ function initMap() {
       $("#menu-panel").animate({
         height: 0
       }, 500);
-      $('.venue-p').hide();
       $(this).removeClass('glyphicon-chevron-up');
       $(this).addClass('glyphicon-chevron-down');
       isClosed = true;
@@ -379,7 +517,6 @@ function initMap() {
       $("#menu-panel").animate({
         height: '70%'
       }, 500);
-      $('.venue-p').show();
       isClosed = false;
     }
   });
@@ -394,6 +531,20 @@ function initMap() {
       opacity: 0
     }, {duration: 500, queue: false});
   });
+
+
+  $("#close-directions").click(function(){
+    $("#right-panel-menu").css("width", "0");
+    document.getElementById('right-panel-menu').style.visibility = "hidden";
+  });
+}
+
+
+function PointTolatLng(point) {
+ var topRight = map.getProjection().fromLatLngToPoint(map.getBounds().getNorthEast());
+ var bottomLeft = map.getProjection().fromLatLngToPoint(map.getBounds().getSouthWest());
+ var scale = Math.pow(2, map.getZoom());
+ return map.getProjection().fromPointToLatLng(new google.maps.Point((point.x / scale) + bottomLeft.x, (point.y / scale) + topRight.y));
 }
 
 /**
@@ -401,16 +552,16 @@ function initMap() {
  * @param {Boolean} openI
  */
 function closeMenu(openI){
-  if(isOpen === openI){
+  if(isOpenMenu === openI){
     $("#togglemenu").slideToggle(500);
     $(".menu-bar").toggleClass("change");
     setTimeout(function() {
       $(".head-box").animate({
         width: 40
-      }, 500);    
+      }, 500);
     }, 500);
     $("#title").text("");
-    isOpen = false;
+    isOpenMenu = false;
   }
 }
 
@@ -422,19 +573,29 @@ function closeMenu(openI){
 function populateInfoWindow(marker, infowindow){
   // Check to make sure the infowindow is not already opened on this marker.
   if(infowindow.marker != marker){
-    infowindow.marker = marker; 
-    // Set content fr the infowindow 
-    infowindow.setContent('<div class="m-title" style="width:270px; overflow: hidden;"><h2>' + marker.title + '</h2><div>' + 
-      '<button class="btn btn-xs btn-primary" data-title="' + 
-      marker.title + '" data-position="' + marker.position + 
-      '" id="marker-more">More...</button><span>&nbsp;&nbsp;</span>' + 
-      '<button id="get-images"' + 
-      '" class="btn btn-xs btn-primary">Get Photos</button><span>&nbsp;&nbsp;</span>' + 
-      '<button id="get-tips"' + 
-      '" class="btn btn-xs btn-primary">Get Tips</button></div></div>');
+    infowindow.marker = marker;
+    var content = '<div class="m-title" style="width:270px; overflow: hidden;"><h2>' + marker.title + '</h2><div>' +
+      '<button class="btn btn-xs btn-primary" data-id="' + ($.inArray(marker, markers) !== -1 ? marker.id : "") +
+        '" data-title="' +
+      marker.title + '" data-position="' + marker.position +
+      '" id="marker-more">More...</button><span>&nbsp;&nbsp;</span>' +
+      '<button id="get-images"' +
+      '" class="btn btn-xs btn-primary">Get Photos</button><span>&nbsp;&nbsp;</span>' +
+      '<button id="get-tips"' +
+      '" class="btn btn-xs btn-primary">Get Tips</button><span>&nbsp;&nbsp;</span>';
+
+    if(markers.indexOf(marker) !== -1){
+      content += '<button style="margin-top: 10px;" id="get-places"' +
+      '" class="btn btn-xs btn-primary">Get Nearby Places of Interest</button>';
+    }
+
+    content += '</div></div>';
+
+    // Set content fr the infowindow
+    infowindow.setContent(content);
 
     // Custom modification done to the infowindow
-    var $iw = $('m-title').parents('.gm-style-iw');
+    var $iw = $('.m-title').parents('.gm-style-iw');
     $iw.css({
       'overflow': 'hidden',
       'width': '270px !important',
@@ -496,13 +657,16 @@ function showMarker(index, infowindow){
 /**
  * This function will loop through the markers array and display them all
  */
-function showListings(){
+function showListings(param){
   var bounds = new google.maps.LatLngBounds();
   // Extend the boundaries of the map for each marker and display the marker
-  for(var i = 0; i < markers.length; i++){
-      markers[i].setMap(map);
-      markers[i].setAnimation(google.maps.Animation.DROP);
-      bounds.extend(markers[i].position);
+  if(param === markers){
+    nearbyMarkers = [];
+  }
+  for(var i = 0; i < param.length; i++){
+      param[i].setMap(map);
+      param[i].setAnimation(google.maps.Animation.DROP);
+      bounds.extend(param[i].position);
   }
   map.fitBounds(bounds);
 }
@@ -511,9 +675,10 @@ function showListings(){
  * This function will loop through the listings and hide them all
  * @param {Array} markers The array of markers to hide
  */
-function hideMarkers(markers){
-  for(var i = 0; i < markers.length; i++){
-    markers[i].setMap(null);
+function hideMarkers(param){
+  nearbyMarkers = [];
+  for(var i = 0; i < param.length; i++){
+    param[i].setMap(null);
   }
 }
 
@@ -542,39 +707,14 @@ function makeMarkerIcon(markerColor){
  * @param {String} markerColor The color to apply to the marker
  * @returns {Object} The markerImage object
  */
-function displayDirections(origin){
-  hideMarkers(markers);
-  var directionsService = new google.maps.DirectionsService;   
-  var destinationAddress = '';
+function displayDirections(origin, destination){
+  var directionsService = new google.maps.DirectionsService;
   var infoWindow = new google.maps.InfoWindow();
-  // Get the destination address as user's address.
-  if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(function(position) {
-      var pos = {
-        lat: position.coords.latitude,
-        lng: position.coords.longitude
-      };
-      destinationAddress = pos;
-    }, function() {
-      handleLocationError(true, infoWindow, map.getCenter());
-    });
-  } else {
-    // Browser doesn't support Geolocation
-    handleLocationError(false, infoWindow, map.getCenter());
-  }
-
-  function handleLocationError(browserHasGeolocation, infoWindow, pos) {
-    infoWindow.setPosition(pos);
-    infoWindow.setContent(browserHasGeolocation ?
-                          'Error: The Geolocation service failed.' :
-                          'Error: Your browser doesn\'t support geolocation.');
-    infoWindow.open(map);
-  }
   // Get mode again from the user entered value.
   var request = {
     // The origin is the passed in marker's position.
     origin: origin,
-    destination: destinationAddress,
+    destination: destination,
     travelMode: google.maps.TravelMode.DRIVING
   };
   directionsService.route(request, function(response, status){
@@ -591,12 +731,10 @@ function displayDirections(origin){
           strokeColor: 'green'
         }
       });
-      $("#hide-route").removeClass("btn-success");
-      $("#hide-route").addClass("btn-danger");
-      $("#hide-route").text("Hide Directions");
-      $("#right-panel").css("height", "auto");
-      document.getElementById('right-panel').style.visibility = "visible";
+      $("#right-panel-menu").css("width", "340px");
+      document.getElementById('right-panel-menu').style.visibility = "visible";
       document.getElementById('right-panel').innerHTML = "";
+
       directionsDisplay.setPanel(document.getElementById("right-panel"));
     }else{
       window.alert('Directions request failed due to ' + status);
@@ -604,410 +742,84 @@ function displayDirections(origin){
   });
 }
 
-/**
- * This function loads data from the FOURSQUARE API
- */
-function loadData(){
-  var fourSquareUrl = fourSquare();
-  var $fourSquare = $("#four-square");
-  var venue = {};
-  $.getJSON(fourSquareUrl)
-    .done(function(data){
-      if(data.response.venues !== null && data.response.venues !== undefined){
-        venue = data.response.venues[0];
-      }
-      getVenueData(venue);
-    })
-    .fail(function(err){
-        $fourSquare.text('The data cannot be loaded. Please try again after some time.');
-    });   
-    return false;
-}
 
 /**
- * This function when called loads images for a venue
+ * This function is in response to the user selecting "show nearby places" on one
+ * of the default markers . This will display the nearby restaurants within a radius of 500
+ * on the map.
  */
-function loadImages(){
-  var $imageSquare = $("#image-square");
-  $imageSquare.empty();
-  $(".modal-body").empty();
-  var fourSquareUrl = fourSquare();
-  var venue = {};
-  $.getJSON(fourSquareUrl)
-    .done(function(data){
-      if(data.response.venues !== null && data.response.venues !== undefined){
-        venue = data.response.venues[0];
-      }
-      venueDetails(venue.id, 'image');
-    })
-    .fail(function(err){
-        $imageSquare.text('The data cannot be loaded. Please try again after some time.');
-    });   
-    return false;
-}
+function nearbySearchPlaces(){
+  var $markerMore = $("#get-places").siblings("#marker-more");
+  var centeredMarker = markers[$markerMore.data("id")];
+  var lat_lng = centeredMarker.getPosition();
+  console.log(lat_lng);
+  var request = {
+    location: lat_lng,
+    radius: '500',
+    type: ['restaurant']
+  };
 
-/**
- * This function when called loads the user tips for a venue
- */
-function loadTips(){
-  var $venueTips = $("#venue-tips");
-  var fourSquareUrl = fourSquare();
-  var venue = {};
-  $.getJSON(fourSquareUrl)
-    .done(function(data){
-      if(data.response.venues !== null && data.response.venues !== undefined){
-        venue = data.response.venues[0];
-      }
-      venueTips(venue.id);
-    })
-    .fail(function(err){
-        $venueTips.text('The data cannot be loaded. Please try again after some time.');
-    });   
-    return false;
-}
-
-/**
- * This function makes initial call to the FOURSQUARE API
- */
-function fourSquare(){
-  var $markerMore = $("#marker-more");
-  var $venueTips = $("#venue-tips");
-  $venueTips.empty();
-
-  var lat_lng = $markerMore.data("position").toString();
-  lat_lng = lat_lng.substr(1, lat_lng.length - 2);
-
-  var fourSquareUrl = "https://api.foursquare.com/v2/venues/search";
-  fourSquareUrl += '?' + $.param({
-    'v': '20170820',
-    'll': lat_lng,
-    // 'client_id': '41PGT0MW5WP2YLYOMO5GVVLOSXY31V1CP45PCHAWQDNRHI4I',
-    'client_id': 'F1E2HZDPZGHKNSK54DWPNAPW3ADHKL0V0IBHLD1ZN1KPMJNG',
-    // 'client_secret': '13ETNO1CLGHIOTSPJCUWX0KJ2IE1M3BBW5ZM0PN5530HWMSZ'
-    'client_secret': '2HTYTSWFTZUS144ABHWAHAQLVCGQMHTKIONLROWJHOVJCOOF'
+  var newIcon = {
+    url: './assets/star-128.png',
+    size: new google.maps.Size(21, 34),
+    origin: new google.maps.Point(0, 0),
+    anchor: new google.maps.Point(10, 34),
+    scaledSize: new google.maps.Size(25, 25)
+  }
+  map.setCenter(lat_lng);
+  var nearInfo = new google.maps.InfoWindow({
+    maxWidth: 270
   });
-  return fourSquareUrl;
-}
 
-/**
- * This is a helper function to retrieve information about
- * a venue based on venue id
- * @param {Number} name
- * @returns {Object}
- */
-function getVenueData(venue){
-  var $fourSquare = $("#four-square");
-  var heading = $('#menu-panel-heading');
-  var venue_name = '';
-  var address = '';
-  var category = '';
-  var venue_url = '';
-  var venue_phone = '';
-  var venue_facebook = '';
-  var venue_twitter = '';
-  var icon = '';
-  var facebook_name = '';
-  var venueId = venue.id;
-  var innerHTML = "";
-  $fourSquare.html("");
-  if(venue !== null || venue !== undefined){
-    venue_name = venue.name;
-    if(venue.location.formattedAddress){
-      address = "";
-      address = venue.location.formattedAddress.join(", ");
-    }
-    if(venue.categories !== null && venue.categories !== undefined){
-      $.each(venue.categories, function(index, value){
-        category += value.name;
+  service = new google.maps.places.PlacesService(map);
+  service.nearbySearch(request, function callback(results, status) {
+    if (status == google.maps.places.PlacesServiceStatus.OK) {
+      var bounds = new google.maps.LatLngBounds();
+      hideMarkers(markers);
+      // Hide previous nearby markers
+      hideMarkers(nearbyMarkers);
+      nearbyMarkers = [];
+      centeredMarker.setMap(map);
+      centeredMarker.setIcon(newIcon);
+      google.maps.event.clearListeners(centeredMarker, 'mouseout');
+      google.maps.event.clearListeners(centeredMarker, 'mouseover');
+      centeredMarker.addListener('mouseout', function(){
+        this.setAnimation(null);
       });
-    }
-    if(venue.url !== null && venue.url !== undefined){
-      venue_url = venue.url;
-    }
-
-    if(venue.contact.formattedPhone !== null && venue.contact.formattedPhone !== undefined){
-      venue_phone = venue.contact.formattedPhone;
-    }
-    if(venue.contact.facebook !== null && venue.contact.facebook !== undefined){
-      venue_facebook = venue.contact.facebook;
-    }
-    if(venue.contact.facebookUsername !== null && venue.contact.facebookUsername !== undefined){
-      facebook_name = venue.contact.facebookUsername;
-    }
-    if(venue.contact.twitter !== null && venue.contact.twitter !== undefined){
-      venue_twitter = venue.contact.twitter;
-    }
-    if(venue.categories[0].icon !== null && venue.categories[0].icon !== undefined){
-      icon = venue.categories[0].icon.prefix + "bg_100" + venue.categories[0].icon.suffix;
-    }
-  }else{
-    $fourSquare.append("<div><p>No data found.</p></div>");
-    return;
-  }
-
-  $fourSquare.text("");
-
-  heading.html("<div class='main-title'><img style='float:left; margin-right: 4px;' src='" + icon + "'><h2 style='margin-bottom: 0; padding-right: 20px;' id='venue_name' data-id='" + venueId + "'>"
-   + venue_name + "</h2></div><div class='clearfix'></div>"); 
-  
-  if(venue_url){
-    innerHTML += "<p class='venue-p'><span class='icon glyphicon glyphicon-globe'></span> <a href='venue_url" + "'>" + venue_url + "</a></p>";
-  }
-  
-  if(category){
-    innerHTML += "<p class='venue-p'><span class='icon glyphicon glyphicon-tag'></span> <span class='label label-success'> " + category + " </span></p>";
-  }
-  if(address){
-    innerHTML += "<p class='venue-p'><span class='icon glyphicon glyphicon-map-marker'></span> " + address + "</p>";
-  }
-  if(venue_phone){
-    innerHTML += "<p class='venue-p'><span class='icon glyphicon glyphicon-phone'></span> " + venue_phone +"</p>";
-  }
-  if(venue_facebook && facebook_name){
-    innerHTML += "<p class='venue-p'><span class='icon'><i class='fa fa-facebook' aria-hidden='true'></i></span><a href='https://fb.com/" + venue_facebook + "'> #" + facebook_name +"</a></p>";
-  }
-  if(venue_twitter){
-    innerHTML += "<p class='venue-p'><span class='icon'><i class='fa fa-twitter' aria-hidden='true'></i></span><a href='https://twitter.com/" + venue_twitter + "'> #" + venue_twitter +"</a></p>";
-  }
-
-  $fourSquare.append(innerHTML);
-  venueDetails(venue.id, 'data');
-}
-
-/**
- * This function retrieves venue details for a venue id
- * @param {Number} venueId
- * @param {String} choice Choice may be data or image
- */
-function venueDetails(venueId, choice){
-  var fourSquareVenue = "https://api.foursquare.com/v2/venues/" + venueId;
-  fourSquareVenue += '?' + $.param({
-    'v': '20170820',
-    // 'client_id': '41PGT0MW5WP2YLYOMO5GVVLOSXY31V1CP45PCHAWQDNRHI4I',
-    'client_id': 'F1E2HZDPZGHKNSK54DWPNAPW3ADHKL0V0IBHLD1ZN1KPMJNG',
-    // 'client_secret': '13ETNO1CLGHIOTSPJCUWX0KJ2IE1M3BBW5ZM0PN5530HWMSZ'
-    client_secret: '2HTYTSWFTZUS144ABHWAHAQLVCGQMHTKIONLROWJHOVJCOOF'
-  });
-  var result = '';
-  $.getJSON(fourSquareVenue)
-  .done(function(data){
-    if(data.response.venue !== null && data.response.venue !== undefined){
-      if(choice === 'data'){
-        returnVenue(data.response.venue);
-      }else if(choice === 'image'){
-        returnVenueImage(data.response.venue);
+      for(var i = 0; i < results.length; i++){
+        var image = {
+          url: results[i].icon,
+          size: new google.maps.Size(21, 34),
+          origin: new google.maps.Point(0, 0),
+          anchor: new google.maps.Point(10, 34),
+          scaledSize: new google.maps.Size(25, 25)
+        };
+        var marker = new google.maps.Marker({
+          position: results[i].geometry.location,
+          title: results[i].name,
+          icon: image,
+          animation: google.maps.Animation.DROP
+        });
+        nearbyMarkers.push(marker);
+        // Create an onclick event to open an infowindow at each marker.
+        marker.addListener('click', (function(m){
+          return function(){
+            m.setAnimation(google.maps.Animation.BOUNCE);
+            populateInfoWindow(m, nearInfo);
+            if($("#get-directions").length === 0){
+              nearInfo.setContent(nearInfo.getContent() + '<div class="m-title"><button data-origin="' + centeredMarker.id +
+              '" data-destination="' + nearbyMarkers.indexOf(m) + '" id="get-directions"' +
+              '" class="btn btn-xs btn-primary">Show Directions</button></div>');
+            }
+          };
+        })(marker));
+        // Reset the marker color to default on mouseout
+        marker.addListener('mouseout', function(){
+          this.setAnimation(null);
+        });
       }
+      showListings(nearbyMarkers);
     }
   });
 }
 
-
-/**
- * This function retrieves tips for a venue id
- * @param {Number} venueId
- */
-function venueTips(venueId){
-  var fourSquareTips = "https://api.foursquare.com/v2/venues/" + venueId + "/tips";
-  fourSquareTips += '?' + $.param({
-    'v': '20170820',
-    // 'client_id': '41PGT0MW5WP2YLYOMO5GVVLOSXY31V1CP45PCHAWQDNRHI4I',
-    'client_id': 'F1E2HZDPZGHKNSK54DWPNAPW3ADHKL0V0IBHLD1ZN1KPMJNG',
-    // 'client_secret': '13ETNO1CLGHIOTSPJCUWX0KJ2IE1M3BBW5ZM0PN5530HWMSZ'
-    'client_secret': '2HTYTSWFTZUS144ABHWAHAQLVCGQMHTKIONLROWJHOVJCOOF'
-  });
-  var result = '';
-  $.getJSON(fourSquareTips)
-  .done(function(data){
-    returnVenueTips(data.response.tips.items);
-  })
-  .fail(function(){
-    returnVenueTips("Error");
-  });
-}
-
-/**
- * This is a helper function to retrieve general information for a venue
- * @param {Array} data
- */
-function returnVenue(data){
-  var venueDetails = data;
-  var checkins = '';
-  var users = '';
-  var visits = '';
-  var hours = {};
-  var photos = [];
-  var $fourSquare = $('#four-square');
-  var innerHTML = '';
-  var rating = "";
-  if(venueDetails !== null && venueDetails !== undefined){
-    if(venueDetails.stats !== null && venueDetails.stats !== undefined){
-        checkins = venueDetails.stats.checkinsCount ? venueDetails.stats.checkinsCount : "N/A";
-        users = venueDetails.stats.usersCount ? venueDetails.stats.usersCount : "N/A";
-        visits = venueDetails.stats.visitsCount ? venueDetails.stats.visitsCount : "N/A";
-      }
-    if(venueDetails.hours !== null && venueDetails.hours !== undefined){
-        hours.status = venueDetails.hours.status;
-        hours.isOpen = venueDetails.hours.isOpen;
-        hours.time = venueDetails.hours.timeframes[0].days + ": " + 
-                      venueDetails.hours.timeframes[0].open[0].renderedTime;
-      }
-
-    if(venueDetails.ratingColor){
-      rating = "<span class='label' style='margin-right: 10px; background-color: #" + venueDetails.ratingColor + ";'>";
-    }
-    if(venueDetails.rating){
-      rating += venueDetails.rating + "</span>";
-    }
-    if(venueDetails.ratingSignals){
-      rating += "<span style='font-size: 12px;'><b><em>" + venueDetails.ratingSignals + " Reviews</em></b></span>";
-    }
-    $(".main-title h2").after(rating);
-
-    if(checkins){
-      innerHTML = "<ul class='list-group'><li class='venue-p list-group-item'><span class='badge'>" + checkins + "</span>Checkins </li>";
-    }
-    if(users){
-      innerHTML += "<li class='venue-p list-group-item'><span class='badge'>" + users + "</span>Users </li>";
-    }
-    if(visits){
-      innerHTML += "<li class='venue-p list-group-item'><span class='badge'>" + visits + "</span>Visits </li></ul>";
-    }
-    if(hours){
-      if(hours.status){
-        innerHTML += "<p class='venue-p'><span class='icon glyphicon glyphicon-time'></span> " +
-          hours.status + " (<a id='show-more' href='#'>show more</a>" + ") </p><p id='time'></p>";
-      }
-      if(hours.isOpen){
-        innerHTML += "<p class='venue-p' style='color: green;'><b>Open now </b></p>";
-      }else{
-        innerHTML += "<p class='venue-p' style='color: red;'><b>Closed </b></p>";
-      }
-    }
-    $fourSquare.append(innerHTML);
-    $("#time").hide();
-    if(hours.time){
-      $("#time").text(" " + hours.time + " ");
-    }else{
-      $('#time').text(' No info available.');
-    }
-    $("#show-more").click(function(){
-      $('#time').slideToggle();
-      if($('#show-more').text() === "show more"){
-        $('#show-more').text("show less");
-      }else if($('#show-more').text() === "show less"){
-        $('#show-more').text("show more");
-      }
-    });
-  }else{
-    $fourSquare.append("<div><p>No time records found.</p></div>");
-  }
-}
-
-/**
- * This is a helper function to retrieve images for a venue
- * @param {Array} data
- */
-function returnVenueImage(data){
-  var venueDetails = data;
-  var images = [];
-  var $imageSquare = $("#image-square");
-  var innerHTML = '';
-  var modalHTML = '';
-  $imageSquare.html("");
-  if(venueDetails.photos.groups.length !== 0){
-    images = venueDetails.photos.groups[0].items;
-  }
-  innerHTML = '<div class="image-row row">';
-  if(images.length !== 0){
-    $.each(images, function(i, image){
-      innerHTML += '<div class="col-xs-12"><a class="thumbnail">' +
-        '<img src="' + image.prefix + '171x180' + image.suffix + '" alt="image-' + i + '"></a></div>';
-    });
-    innerHTML += '</div>';
-    $imageSquare.html(innerHTML);
-    $('.col-xs-12 .thumbnail img').click(function(){
-      var index = $(this).parents('.col-xs-12').index();
-      var src = $(this).attr('src');
-      src = src.replace('171x180', '960x720');
-      modalHTML = '<img style="width:100%;" src="' + src + '">';
-      modalHTML += '<div class="control-div">';
-      modalHTML += '<button class="btn btn-xs btn-success controls next" data-index="'+ 
-                    (index+2) + '">next <span class="glyphicon glyphicon-chevron-right"></span></button>';
-      modalHTML += '<button class="btn btn-xs btn-success controls prev" data-index="'+ 
-                    (index) + '"><span class="glyphicon glyphicon-chevron-left"></span> prev</button>';
-      modalHTML += '</div>';
-      $('#modalImages').modal();
-      $('#modalImages').on('shown.bs.modal', function(){
-          $('#modalImages .modal-body').html(modalHTML);
-          $('button.controls').trigger('click');
-      });
-      $('#modalImages').on('hidden.bs.modal', function(){
-          $('#modalImages .modal-body').html("");
-      });
-    });
-  }else{
-    innerHTML = '<div class="col-xs-12"><p class="thumbnail">No images found in the database.</p></div></div>';
-    $imageSquare.html(innerHTML);
-  }
-} 
-
-// On click event for prev and next buttons of the image modal
-$(document).on('click', 'button.controls', function(){
-  var index = $(this).data('index');
-  var src = $('.image-row .col-xs-12:nth-child('+ index +') .thumbnail img').attr('src');
-  if(src){
-    src = src.replace('171x180', '960x720');
-  }
-  $('.modal-body img').attr('src', src);
-  $('.modal-body img').fadeOut('slow', function () {
-    $(this).fadeIn(3000);
-  });
-  var newPrevIndex = parseInt(index) - 1;
-  var newNextIndex = parseInt(newPrevIndex) + 2;
-   
-  if($(this).hasClass('prev')){
-      $(this).data('index', newPrevIndex);
-      $('button.next').data('index', newNextIndex);
-  }else{
-      $(this).data('index', newNextIndex);
-      $('button.prev').data('index', newPrevIndex);
-  }
-  var total = $(document).find('.image-row .col-xs-12').length + 1;
-
-  //hide next button
-  if(newNextIndex === total){
-      $('button.next').hide();
-  }else{
-      $('button.next').show();
-  }
-  //hide previous button
-  if(newPrevIndex === 0){
-      $('button.prev').hide();
-  }else{
-      $('button.prev').show();
-  }
-});
-
-/**
- * This is a helper function to retrieve user tips
- * @param {Array} data
- */
-function returnVenueTips(data){
-  var $venueTips = $("#venue-tips");
-  var innerHTML = '';
-  if(data && typeof data === 'object' && data.constructor === Array){
-    $.each(data, function(index, value){
-      innerHTML = '<div class="media">' + '<div class="media-left">' +
-          '<img src="'+ value.user.photo.prefix + "100x100" + value.user.photo.suffix + 
-          '" class="media-object" style="width:100px">' +
-          '</div><div class="media-body"><h4 class="media-heading"><b>' + 
-          (value.user.firstName ? value.user.firstName : "") + " " + 
-          (value.user.lastName ? value.user.lastName : "") +'</b></h4>' +
-          '<p><em>' + value.text + '</em></p></div></div><hr>';
-      $venueTips.append(innerHTML);
-    });
-  }
-  if($venueTips.html() === ""){
-    $venueTips.html("<div>No user reviews found</div>")
-  }
-}

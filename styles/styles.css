@@ -33,6 +33,8 @@ h1 {
   text-align: center;
 }
 
+#sign-up,
+#log-in,
 #hide-listings,
 #show-listings {
   width: 49%;
@@ -147,8 +149,33 @@ select.form-control {
   padding-right: 10px;
 }
 
-#right-panel {
+#right-panel-menu {
+  font-size: 1.2em;
   visibility: hidden;
+  position: absolute;
+  z-index: 200;
+  background: #fff;
+  border: 1px solid #999;
+  width: 0;
+  line-height: 35px;
+  text-align: left;
+  overflow-x: hidden;
+  overflow-y: auto;
+  top: 0;
+  right: 0;
+  bottom: 50px;
+  -webkit-box-shadow: 0 2px 6px rgba(0,0,0,.3);
+  -moz-box-shadow: 0 2px 6px rgba(0,0,0,.3);
+  box-shadow: 0 2px 6px rgba(0,0,0,.3);
+}
+
+#right-panel-menu row {
+  padding:  auto 25px;
+}
+
+#right-panel-menu h4 {
+  text-align: center;
+  padding: 5px 10px;
 }
 
 #menu-panel, #left-panel {
@@ -172,7 +199,7 @@ select.form-control {
 
 #menu-panel {
   z-index: 200;
-  top: -50px;  
+  top: -50px;
   overflow-x: hidden;
   overflow-y: auto;
 }
@@ -215,7 +242,7 @@ select.form-control {
   text-align: left;
   height: 100%;
   right: 0;
-  bottom: 0;
+  bottom: 50px;
   -webkit-box-shadow: 0 2px 6px rgba(0,0,0,.3);
   -moz-box-shadow: 0 2px 6px rgba(0,0,0,.3);
   box-shadow: 0 2px 6px rgba(0,0,0,.3);
@@ -425,4 +452,20 @@ img#photo-img {
 #venue-detail-menu {
   font-size: 22px;
   float: right;
+}
+
+.modal-heading {
+  padding: 8px;
+  margin: 10px;
+}
+
+.modal-body {
+  margin: 10px;
+}
+
+#log-in-modal .modal-dialog,
+#log-in-modal .modal-content,
+#sign-up-modal .modal-dialog,
+#sign-up-modal .modal-content {
+  height: 500px;
 }
