@@ -31,7 +31,7 @@
           <button data-bind="visible: isLoggedIn()" id="log-out" type="button" class="btn btn-primary" data-bind="click: signOut" data-toggle="modal" data-target="#log-in-modal" type="button"><span class="glyphicon glyphicon-log-out"></span> Log out</button>
           <div data-bind="visible: isLoggedIn">
             <h4>Hello <span id="username" data-bind="text: userName"></span></h4>
-            <button data-bind="{visible: isLoggedIn()}" type="button" class="btn btn-primary" data-toggle="modal" data-target="#my-places-modal" type="button"> My Places </button>
+            <button data-bind="{visible: isLoggedIn(), click:showMyPlaces}" type="button" class="btn btn-primary" data-toggle="modal" data-target="#my-places-modal" type="button"> My Places </button>
           </div>
           <hr>
           <button id="show-listings" class="btn btn-primary" type="button">Show Listings</button>
@@ -258,11 +258,11 @@
             <h2> My Favorite places </h2>
           </div>
           <div class="modal-body">
-            <div data-bind="visible: noFavs">
+            <div data-bind="visible: noFavs()">
               <p>No Favorites in your bucket list. Add some.</p>
             </div>
-            <div class="list-group" data-bind="{visible: !noFavs, foreach: favLocations}">
-              <li class="list-group-item  list-default" data-bind="text: title"></li>
+            <div class="list-group" data-bind="{visible: !noFavs(), foreach: favLocations}">
+              <li class="list-group-item  list-default" data-bind="text: title">
             </div>
           </div>
         </div>

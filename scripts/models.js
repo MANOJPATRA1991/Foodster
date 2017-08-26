@@ -178,34 +178,40 @@ function LogInModel(){
 ko.applyBindings(new LogInModel(), document.getElementById("log-in-modal"));
 
 function favoritesModel(){
-  self.userId = ko.observable().subscribeTo("currentUserId");
+  self.user = ko.observable().subscribeTo("currentUserId");
   self.favLocations = ko.observableArray().publishOn("FavArray");
   self.noFavs = ko.observable(false);
 
   $('#my-places-modal').on('shown.bs.modal', function(){
-  console.log(self.userId());
-  if(self.userId() !== undefined){
-    // Sync changes
-    firebase.database().ref().child('/users/' + self.userId() + '/favorites/').on('value', function(snap){
-      if(snap !== null){
-        snap.forEach(function(childSnap){
-          var childKey = childSnap.key;
-          var childObj = childSnap.val();
-          var location = {
-            title: childObj.title,
-            position: {
-              lat: parseInt(childObj.lat),
-              lng: parseInt(childObj.lng)
-            }
-          };
-          self.favLocations().push(location);
-        });
-        console.log(self.favLocations());
-      }else{
-        self.noFavs(true);
-      }
-    });
-  }});
+    console.log(self.userId());
+    if(self.user() !== undefined){
+      // Sync changes
+      firebase.database().ref().child('/users/' + self.user() + '/favorites/').once('value', function(snap){
+        if(snap !== null){
+          snap.forEach(function(childSnap){
+            var childKey = childSnap.key;
+            var childObj = childSnap.val();
+            var location = {
+              title: childObj.title,
+              position: {
+                lat: parseInt(childObj.lat),
+                lng: parseInt(childObj.lng)
+              }
+            };
+            self.favLocations.push(location);
+          });
+          console.log(self.favLocations());
+        }else{
+          self.noFavs(true);
+        }
+      });
+    }
+  });
+
+  $('#my-places-modal').on('hidden.bs.modal', function(){
+      self.favLocations([]);
+  });
+
 }
 
 ko.applyBindings(new favoritesModel(), document.getElementById("my-places-modal"));

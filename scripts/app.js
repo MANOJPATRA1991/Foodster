@@ -178,10 +178,10 @@ function initMap() {
   function LocationsViewModel(){
     var self = this;
     self.query = ko.observable('');
+    self.userId = ko.observable().subscribeTo("currentUserId");
     self.isLoggedIn = ko.observable().subscribeTo("isLoggedIn");
     self.userName = ko.observable().subscribeTo("currentUser");
-    self.userId = ko.observable().subscribeTo("currentUserId");
-
+    self.favLocations = ko.observableArray().subscribeTo("FavArray");
     // An array of locations
     var locations = [
         {
@@ -294,6 +294,12 @@ function initMap() {
        showListings(markers);
     };
 
+    self.showMyPlaces = function(){
+      hideMarkers(nearbyMarkers);
+      hideMarkers(markers)
+      var favMarkers = new Markers(self.favLocations);
+      showListings(favMarkers);
+    }
 
     self.searchByRating = ko.observable(false);
 
@@ -306,6 +312,7 @@ function initMap() {
      * An observable variable to filter locations based on an input field
      */
     self.locations = ko.computed(function() {
+        console.log(self.userId());
         var search = self.query().toLowerCase();
         return ko.utils.arrayFilter(locations, function(location) {
             if(self.query() !== "" && location.title.toLowerCase().indexOf(search) >= 0){
@@ -364,6 +371,7 @@ function initMap() {
 
     // Add favorite lat-lng to database if user is logged in
     $(document).on('click', '#favorites', function(){
+      console.log(self.userId());
       if(self.userId() !== undefined){
         var favPos = $("#favorites").data("link");
         var title = $("#favorites").data("title");
@@ -375,25 +383,33 @@ function initMap() {
         var lng = favPos.substring(favPos.lastIndexOf(",")+2,favPos.lastIndexOf(")"));
         console.log(lat);
 
+        // Keep track if data exists in firebase database
+        var isData = false;
+
         // Get a reference to the database service
         var data = {
           title: title,
           lat: lat,
           lng: lng
         };
-        var newKey = firebase.database().ref().child('favorites').push().key;
-        var updates = {};
-        updates['/users/' + self.userId() + '/favorites/' + newKey] = data;
-        firebase.database().ref().update(updates);
 
-        // ('users/' + self.userId() + '/favorites/').push(favPos);
-        console.log(self.userId());
+        firebase.database().ref().child('/users/' + self.userId() + '/favorites/').once('value', function(snap){
+          // remove data if it exists in the database
+          if(snap.hasChild(data.title)) {
+            var updates = {};
+            updates['/users/' + self.userId() + '/favorites/' + data.title] = null;
+            firebase.database().ref().update(updates);
+          }else{
+            // add data to database if it doesn't already exist
+            var updates = {};
+            updates['/users/' + self.userId() + '/favorites/' + data.title] = data;
+            firebase.database().ref().update(updates);
+          }
+        });
       }else{
         $("#log-in-modal").modal('show');
       }
     });
-
-
   }
 
   ko.applyBindings(new LocationsViewModel(), document.getElementById("togglemenu"));
