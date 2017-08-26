@@ -18,6 +18,7 @@ var polygon = null;
 // over the number of places that show.
 var placeMarkers = [];
 
+var largeInfowindow = '';
 /**
  * Initial function called once the Google map libraries are loaded
  */
@@ -119,7 +120,7 @@ function initMap() {
   map.setMapTypeId('styled_map');
 
   // Instantiate info window with default width of 350px
-  var largeInfowindow = new google.maps.InfoWindow({
+  largeInfowindow = new google.maps.InfoWindow({
     maxWidth: 270
   });
 
@@ -179,6 +180,7 @@ function initMap() {
     self.query = ko.observable('');
     self.isLoggedIn = ko.observable().subscribeTo("isLoggedIn");
     self.userName = ko.observable().subscribeTo("currentUser");
+    self.userId = ko.observable().subscribeTo("currentUserId");
 
     // An array of locations
     var locations = [
@@ -288,6 +290,7 @@ function initMap() {
     self.clearValue = function() {
        self.query('');
        self.values([1, 10]);
+       hideMarkers(nearbyMarkers);
        showListings(markers);
     };
 
@@ -295,19 +298,20 @@ function initMap() {
     self.searchByRating = ko.observable(false);
 
     self.activateSearchByRating = function(){
+      self.clearValue();
       self.searchByRating(!self.searchByRating());
     };
 
     /**
      * An observable variable to filter locations based on an input field
      */
-    self.locations = ko.dependentObservable(function() {
+    self.locations = ko.computed(function() {
         var search = self.query().toLowerCase();
         return ko.utils.arrayFilter(locations, function(location) {
             if(self.query() !== "" && location.title.toLowerCase().indexOf(search) >= 0){
               showMarker(locations.indexOf(location), largeInfowindow);
             }
-            if(search){
+            if(search !== ""){
               return location.title.toLowerCase().indexOf(search) >= 0;
             }
             if(self.searchByRating){
@@ -315,6 +319,16 @@ function initMap() {
             }
         });
     }, self);
+
+    /**
+     * An observable variable to sort locations alphabetically
+     */
+    self.sortedLocations = ko.computed(function() {
+        return self.locations().sort(function (left, right){
+          return left.title == right.title ? 0 :
+              (left.title < right.title ? -1 : 1);
+        });
+    });
 
     // custom binding for slider
     ko.bindingHandlers.slider = {
@@ -346,13 +360,53 @@ function initMap() {
 
     self.rateRange = ko.computed(function() {
         return self.values()[0] + " - " + self.values()[1] ;
-    }, self)
+    }, self);
+
+    // Add favorite lat-lng to database if user is logged in
+    $(document).on('click', '#favorites', function(){
+      if(self.userId() !== undefined){
+        var favPos = $("#favorites").data("link");
+        var title = $("#favorites").data("title");
+        var favLocations = [];
+        // Get the latitude
+        var lat = favPos.substring(favPos.lastIndexOf("(")+1,favPos.lastIndexOf(","));
+
+        // Get the longitude
+        var lng = favPos.substring(favPos.lastIndexOf(",")+2,favPos.lastIndexOf(")"));
+        console.log(lat);
+
+        // Get a reference to the database service
+        var data = {
+          title: title,
+          lat: lat,
+          lng: lng
+        };
+        var newKey = firebase.database().ref().child('favorites').push().key;
+        var updates = {};
+        updates['/users/' + self.userId() + '/favorites/' + newKey] = data;
+        firebase.database().ref().update(updates);
+
+        // ('users/' + self.userId() + '/favorites/').push(favPos);
+        console.log(self.userId());
+      }else{
+        $("#log-in-modal").modal('show');
+      }
+    });
+
+
   }
 
   ko.applyBindings(new LocationsViewModel(), document.getElementById("togglemenu"));
 
-  $('#show-listings').click(function(){showListings(markers)});
+  // Show Listings button
+  $('#show-listings').click(function(){
+    hideMarkers(nearbyMarkers);
+    showListings(markers);
+  });
+
+  // Hide Listings button
   $('#hide-listings').click(function(){
+    hideMarkers(nearbyMarkers);
     hideMarkers(markers);
   });
 
@@ -361,6 +415,7 @@ function initMap() {
 
   // Used to toggle the menu-panel
   var isClosed = false;
+
   // Used to toggle the photo panel
   var isClosedPhoto = false;
 
@@ -368,8 +423,10 @@ function initMap() {
     $("#left-panel").css('z-index', 300);
   });
 
+  // Hide toggle menu on app load
   $("#togglemenu").hide();
 
+  // Menu bar effects
   $(".menu-bar").click(function(){
       if(!isOpenMenu){
         $("#menu-panel").css("visibility", "hidden");
@@ -536,6 +593,7 @@ function initMap() {
   $("#close-directions").click(function(){
     $("#right-panel-menu").css("width", "0");
     document.getElementById('right-panel-menu').style.visibility = "hidden";
+    directionsDisplay.setMap(null);
   });
 }
 
@@ -566,18 +624,32 @@ function closeMenu(openI){
 }
 
 /**
+ * This function hides the infowindow.
+ * @param {Object} marker The marker for which to close the infowindow
+ * @param {Object} infowindow The infowindow instance to close
+ */
+function hideInfoWindow(marker, infowindow){
+  infowindow.marker = null;
+}
+
+/**
  * This function populates the infowindow when the marker is clicked.
  * @param {Object} marker The marker for which to open the infowindow
  * @param {Object} infowindow The infowindow instance to open
  */
 function populateInfoWindow(marker, infowindow){
+  // If not largeInfowindow, close any open largeInfowindow
+  if(infowindow !== largeInfowindow){
+    largeInfowindow.close();
+  }
   // Check to make sure the infowindow is not already opened on this marker.
   if(infowindow.marker != marker){
     infowindow.marker = marker;
-    var content = '<div class="m-title" style="width:270px; overflow: hidden;"><h2>' + marker.title + '</h2><div>' +
+    var content = '<div class="m-title" style="width:270px; overflow: hidden;"><h2>' + marker.title + '</h2>' +
+      '<span  data-title="' + marker.title + '" data-link="' + marker.getPosition() + '" id="favorites" class="glyphicon glyphicon-heart-empty"></span>' + '<div>' +
       '<button class="btn btn-xs btn-primary" data-id="' + ($.inArray(marker, markers) !== -1 ? marker.id : "") +
         '" data-title="' +
-      marker.title + '" data-position="' + marker.position +
+      marker.title + '" data-position="' + marker.getPosition().toString() +
       '" id="marker-more">More...</button><span>&nbsp;&nbsp;</span>' +
       '<button id="get-images"' +
       '" class="btn btn-xs btn-primary">Get Photos</button><span>&nbsp;&nbsp;</span>' +
@@ -644,8 +716,8 @@ function hideElems(){
 function showMarker(index, infowindow){
   var bounds = new google.maps.LatLngBounds();
   // Hide all markers before displaying the single marker
+  hideMarkers(nearbyMarkers);
   hideMarkers(markers);
-
   // Extend the boundaries of the map for a single marker and display the marker
   markers[index].setMap(map);
   populateInfoWindow(markers[index], infowindow);
@@ -660,9 +732,6 @@ function showMarker(index, infowindow){
 function showListings(param){
   var bounds = new google.maps.LatLngBounds();
   // Extend the boundaries of the map for each marker and display the marker
-  if(param === markers){
-    nearbyMarkers = [];
-  }
   for(var i = 0; i < param.length; i++){
       param[i].setMap(map);
       param[i].setAnimation(google.maps.Animation.DROP);
@@ -676,10 +745,10 @@ function showListings(param){
  * @param {Array} markers The array of markers to hide
  */
 function hideMarkers(param){
-  nearbyMarkers = [];
   for(var i = 0; i < param.length; i++){
     param[i].setMap(null);
   }
+  nearbyMarkers = [];
 }
 
 /**
@@ -729,7 +798,7 @@ function displayDirections(origin, destination){
         draggable: true,
         polylineOptions: {
           strokeColor: 'green'
-        }
+        },
       });
       $("#right-panel-menu").css("width", "340px");
       document.getElementById('right-panel-menu').style.visibility = "visible";
@@ -758,14 +827,15 @@ function nearbySearchPlaces(){
     radius: '500',
     type: ['restaurant']
   };
+  hideInfoWindow(centeredMarker, largeInfowindow)
 
-  var newIcon = {
-    url: './assets/star-128.png',
-    size: new google.maps.Size(21, 34),
-    origin: new google.maps.Point(0, 0),
-    anchor: new google.maps.Point(10, 34),
-    scaledSize: new google.maps.Size(25, 25)
-  }
+  // var newIcon = {
+  //   url: './assets/star-128.png',
+  //   size: new google.maps.Size(21, 34),
+  //   origin: new google.maps.Point(0, 0),
+  //   anchor: new google.maps.Point(10, 34),
+  //   scaledSize: new google.maps.Size(25, 25)
+  // }
   map.setCenter(lat_lng);
   var nearInfo = new google.maps.InfoWindow({
     maxWidth: 270
@@ -780,12 +850,12 @@ function nearbySearchPlaces(){
       hideMarkers(nearbyMarkers);
       nearbyMarkers = [];
       centeredMarker.setMap(map);
-      centeredMarker.setIcon(newIcon);
-      google.maps.event.clearListeners(centeredMarker, 'mouseout');
-      google.maps.event.clearListeners(centeredMarker, 'mouseover');
-      centeredMarker.addListener('mouseout', function(){
-        this.setAnimation(null);
-      });
+      // centeredMarker.setIcon(newIcon);
+      // google.maps.event.clearListeners(centeredMarker, 'mouseout');
+      // google.maps.event.clearListeners(centeredMarker, 'mouseover');
+      // centeredMarker.addListener('mouseout', function(){
+      //   this.setAnimation(null);
+      // });
       for(var i = 0; i < results.length; i++){
         var image = {
           url: results[i].icon,

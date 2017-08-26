@@ -1,5 +1,9 @@
+// foursquare client id
 var FOURSQUARE_CLIENT_ID = "41PGT0MW5WP2YLYOMO5GVVLOSXY31V1CP45PCHAWQDNRHI4I";
+
+// foursquare client secret
 var FOURSQUARE_CLIENT_SECRET = "13ETNO1CLGHIOTSPJCUWX0KJ2IE1M3BBW5ZM0PN5530HWMSZ";
+
 
 /**
  * This function loads data from the FOURSQUARE API
@@ -72,6 +76,7 @@ function getVenueData(venue){
   }
 }
 
+
 /**
  * This is a helper function to retrieve general information for a venue
  * @param {Array} data
@@ -109,6 +114,7 @@ function returnVenue(data){
     }
   }
 }
+
 
 /**
  * This function when called loads images for a venue
@@ -181,6 +187,7 @@ function returnVenueImage(data){
     venueImagesInstance.message("No images found.");
   }
 }
+
 
 // On click event for prev and next buttons of the image modal
 $(document).on('click', 'button.controls', function(){
@@ -284,6 +291,7 @@ function venueTips(venueId){
   return false;
 }
 
+
 /**
  * This function makes initial call to the FOURSQUARE API
  */
@@ -305,6 +313,7 @@ function fourSquare(){
   });
   return fourSquareUrl;
 }
+
 
 /**
  * This function retrieves venue details for a venue id

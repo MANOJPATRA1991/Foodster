@@ -36,7 +36,9 @@ h1 {
 #sign-up,
 #log-in,
 #hide-listings,
-#show-listings {
+#show-listings,
+#reset,
+#filter {
   width: 49%;
 }
 
@@ -405,6 +407,9 @@ img#photo-img {
   background-color: #D8D8D8;
 }
 
+#image-square {
+  margin-top: 70px;
+}
 
 #image-square .thumbnail {
   width: 171px;
@@ -468,4 +473,17 @@ img#photo-img {
 #sign-up-modal .modal-dialog,
 #sign-up-modal .modal-content {
   height: 500px;
+}
+
+#message {
+  margin-top: 50px;
+  padding: 10px;
+}
+
+#username {
+  color: #9ABAF3;
+}
+
+.glyphicon-heart-empty {
+  font-size: 50px;
 }
