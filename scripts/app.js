@@ -6,10 +6,8 @@ var isOpenMenu = false;
 // Create a blank array for listing all the markers
 var markers = [];
 
+// To store the direction display renderer instance
 var directionsDisplay;
-
-// This global array is used to store nearby place markers for a default marker
-var nearbyMarkers = [];
 
 // This global polygon variable is to ensure only ONE polgon is rendered
 var polygon = null;
@@ -18,7 +16,9 @@ var polygon = null;
 // over the number of places that show.
 var placeMarkers = [];
 
+// To store the infowindow instance
 var largeInfowindow = '';
+
 /**
  * Initial function called once the Google map libraries are loaded
  */
@@ -131,6 +131,7 @@ function initMap() {
   // mouses over the marker.
   var highlightedIcon = makeMarkerIcon('FFFF24');
 
+
   /**
    * This function creates default markers
    * @param {Array} locations
@@ -142,6 +143,7 @@ function initMap() {
     for (var i = 0; i < locations.length; i++) {
       var position = locations[i].location;
       var title = locations[i].title;
+
       // Create a marker object
         var marker = new google.maps.Marker({
           position: position,
@@ -150,25 +152,28 @@ function initMap() {
           animation: google.maps.Animation.DROP,
         id: i
       });
+
       // Push the marker to our array of markers.
       self.markers.push(marker);
+
       // Create an onclick event to open an infowindow at each marker.
       marker.addListener('click', function(){
         this.setAnimation(google.maps.Animation.BOUNCE);
         populateInfoWindow(this, largeInfowindow);
         hideElems();
       });
+
       // Change the color of the marker on mouseover
       marker.addListener('mouseover', function(){
         this.setIcon(highlightedIcon);
       });
+
       // Reset the marker color to default on mouseout
       marker.addListener('mouseout', function(){
         this.setAnimation(null);
         this.setIcon(defaultIcon);
       });
     }
-
     return self.markers;
   }
 
@@ -181,7 +186,22 @@ function initMap() {
     self.userId = ko.observable().subscribeTo("currentUserId");
     self.isLoggedIn = ko.observable().subscribeTo("isLoggedIn");
     self.userName = ko.observable().subscribeTo("currentUser");
-    self.favLocations = ko.observableArray().subscribeTo("FavArray");
+    self.favArray = ko.observableArray().subscribeTo("FavArray");
+    self.alert = ko.observable().publishOn("Alert");
+    self.fade = ko.observable(false).syncWith("Fade");
+
+    // Show Listings button
+    self.showList = function(){
+      hideMarkers(placeMarkers);
+      showListings(markers);
+    };
+
+    // Hide Listings button
+    self.hideList = function(){
+      hideMarkers(placeMarkers);
+      hideMarkers(markers);
+    };
+
     // An array of locations
     var locations = [
         {
@@ -274,6 +294,7 @@ function initMap() {
         }
       ];
 
+    // Create markers for the default locations
     markers = new Markers(locations);
 
     /**
@@ -283,36 +304,38 @@ function initMap() {
       showMarker(locations.indexOf(this), largeInfowindow);
     };
 
-
+    // Values for the rating filter
     self.values = ko.observable([1, 10]);
 
-
+    /**
+     * Hide all markers except default markers
+     */
     self.clearValue = function() {
        self.query('');
        self.values([1, 10]);
-       hideMarkers(nearbyMarkers);
+       hideMarkers(placeMarkers);
        showListings(markers);
     };
 
-    self.showMyPlaces = function(){
-      hideMarkers(nearbyMarkers);
-      hideMarkers(markers)
-      var favMarkers = new Markers(self.favLocations);
-      showListings(favMarkers);
-    }
-
     self.searchByRating = ko.observable(false);
 
+    /**
+     * This function activates search by rating
+     */
     self.activateSearchByRating = function(){
       self.clearValue();
       self.searchByRating(!self.searchByRating());
     };
 
-    /**
-     * An observable variable to filter locations based on an input field
-     */
+    self.showFavPlaces = function(){
+      hideMarkers(placeMarkers);
+      hideMarkers(markers);
+      placeMarkers = new Markers(self.favArray());
+      showListings(placeMarkers);
+    }
+
+    // An observable variable to filter locations based on an input field
     self.locations = ko.computed(function() {
-        console.log(self.userId());
         var search = self.query().toLowerCase();
         return ko.utils.arrayFilter(locations, function(location) {
             if(self.query() !== "" && location.title.toLowerCase().indexOf(search) >= 0){
@@ -327,9 +350,8 @@ function initMap() {
         });
     }, self);
 
-    /**
-     * An observable variable to sort locations alphabetically
-     */
+
+    // An observable variable to sort locations alphabetically
     self.sortedLocations = ko.computed(function() {
         return self.locations().sort(function (left, right){
           return left.title == right.title ? 0 :
@@ -337,41 +359,41 @@ function initMap() {
         });
     });
 
-    // custom binding for slider
+    // Custom binding for slider
     ko.bindingHandlers.slider = {
-        init: function (element, valueAccessor, allBindings) {
-            var options = allBindings().sliderOptions || {};
-            var $el = $(element);
-            // current value
-            var observable = valueAccessor();
-            options.range = true;
+      init: function (element, valueAccessor, allBindings) {
+          var options = allBindings().sliderOptions || {};
+          var $el = $(element);
+          // current value
+          var observable = valueAccessor();
+          options.range = true;
 
-            // function to update ui.values on slide
-            options.slide = function(e, ui) {
-                observable(ui.values);
-            };
+          // function to update ui.values on slide
+          options.slide = function(e, ui) {
+              observable(ui.values);
+          };
 
-            // clean-up logic that runs when slider is removed by Knockout.
-            ko.utils.domNodeDisposal.addDisposeCallback(element, function () {
-                $el.slider("destroy");
-            });
+          // clean-up logic that runs when slider is removed by Knockout.
+          ko.utils.domNodeDisposal.addDisposeCallback(element, function () {
+              $el.slider("destroy");
+          });
 
-            $el.slider(options);
-        },
-        update: function (element, valueAccessor) {
-            var $el = $(element);
-            var value = ko.unwrap(valueAccessor());
-            $el.slider("values", value);
-        }
+          $el.slider(options);
+      },
+      update: function (element, valueAccessor) {
+          var $el = $(element);
+          var value = ko.unwrap(valueAccessor());
+          $el.slider("values", value);
+      }
     };
 
+    // Display range selected for filtering
     self.rateRange = ko.computed(function() {
         return self.values()[0] + " - " + self.values()[1] ;
     }, self);
 
     // Add favorite lat-lng to database if user is logged in
     $(document).on('click', '#favorites', function(){
-      console.log(self.userId());
       if(self.userId() !== undefined){
         var favPos = $("#favorites").data("link");
         var title = $("#favorites").data("title");
@@ -381,7 +403,6 @@ function initMap() {
 
         // Get the longitude
         var lng = favPos.substring(favPos.lastIndexOf(",")+2,favPos.lastIndexOf(")"));
-        console.log(lat);
 
         // Keep track if data exists in firebase database
         var isData = false;
@@ -393,18 +414,22 @@ function initMap() {
           lng: lng
         };
 
+        // listen to firebase data on click
         firebase.database().ref().child('/users/' + self.userId() + '/favorites/').once('value', function(snap){
           // remove data if it exists in the database
           if(snap.hasChild(data.title)) {
             var updates = {};
             updates['/users/' + self.userId() + '/favorites/' + data.title] = null;
             firebase.database().ref().update(updates);
+            self.alert(data.title + " removed from your favorites");
           }else{
             // add data to database if it doesn't already exist
             var updates = {};
             updates['/users/' + self.userId() + '/favorites/' + data.title] = data;
             firebase.database().ref().update(updates);
+            self.alert(data.title + " added to your favorites");
           }
+          self.fade(true);
         });
       }else{
         $("#log-in-modal").modal('show');
@@ -412,35 +437,42 @@ function initMap() {
     });
   }
 
+  // Apply binding to element with id togglemenu
   ko.applyBindings(new LocationsViewModel(), document.getElementById("togglemenu"));
 
-  // Show Listings button
-  $('#show-listings').click(function(){
-    hideMarkers(nearbyMarkers);
-    showListings(markers);
-  });
 
-  // Hide Listings button
-  $('#hide-listings').click(function(){
-    hideMarkers(nearbyMarkers);
-    hideMarkers(markers);
-  });
+  /**
+   * This function is our alert viewmodel
+   */
+  function AlertModel(){
+    var self = this;
+    self.alert = ko.observable().subscribeTo("Alert");
+    self.fade = ko.observable(false).syncWith("Fade");
+    self.toggleFade = function(){
+        self.fade(!self.fade());
+    };
+  }
+
+  // Apply binding to element with id alert
+  ko.applyBindings(new AlertModel(), document.getElementById('alert'));
 
   // Display default markers on map on page load
   showListings(markers);
+
+  // Hide toggle menu on page load
+  $("#togglemenu").hide();
+
+  /**
+   *
+   * Effects for links on info window
+   *
+   */
 
   // Used to toggle the menu-panel
   var isClosed = false;
 
   // Used to toggle the photo panel
   var isClosedPhoto = false;
-
-  $("#left-panel").click(function(){
-    $("#left-panel").css('z-index', 300);
-  });
-
-  // Hide toggle menu on app load
-  $("#togglemenu").hide();
 
   // Menu bar effects
   $(".menu-bar").click(function(){
@@ -501,20 +533,20 @@ function initMap() {
     loadData();
   });
 
+  // Get Directions
   $(document).on('click', '#get-directions', function(){
     closeMenu(true);
     var $getDirections = $('#get-directions');
     var origin = $getDirections.data('origin');
     var destination = $getDirections.data('destination');
-    console.log(origin);
-    console.log(destination);
     $("#menu-panel").css("visibility", "hidden");
     $("#photo-panel").css({"visibility": "hidden", "width": 0});
     $("#close-photo-panel").css({"visibility": "hidden", "width": 0});
     $("#left-panel").css({"visibility": "hidden"});
-    displayDirections(markers[origin].getPosition(), nearbyMarkers[destination].getPosition());
+    displayDirections(markers[origin].getPosition(), placeMarkers[destination].getPosition());
   });
 
+  // Get nearby places
   $(document).on('click', '#get-places', function(){
     closeMenu(true);
     $("#menu-panel").css("visibility", "hidden");
@@ -594,6 +626,11 @@ function initMap() {
     }
   });
 
+
+  $("#left-panel").click(function(){
+    $("#left-panel").css('z-index', 300);
+  });
+
   // Close the panel showing tips for the place
   $("#close-reviews").click(function(){
     $("#left-panel").css('z-index', 100);
@@ -605,20 +642,12 @@ function initMap() {
     }, {duration: 500, queue: false});
   });
 
-
+  // Close the directions info window
   $("#close-directions").click(function(){
     $("#right-panel-menu").css("width", "0");
     document.getElementById('right-panel-menu').style.visibility = "hidden";
     directionsDisplay.setMap(null);
   });
-}
-
-
-function PointTolatLng(point) {
- var topRight = map.getProjection().fromLatLngToPoint(map.getBounds().getNorthEast());
- var bottomLeft = map.getProjection().fromLatLngToPoint(map.getBounds().getSouthWest());
- var scale = Math.pow(2, map.getZoom());
- return map.getProjection().fromPointToLatLng(new google.maps.Point((point.x / scale) + bottomLeft.x, (point.y / scale) + topRight.y));
 }
 
 /**
@@ -662,7 +691,8 @@ function populateInfoWindow(marker, infowindow){
   if(infowindow.marker != marker){
     infowindow.marker = marker;
     var content = '<div class="m-title" style="width:270px; overflow: hidden;"><h2>' + marker.title + '</h2>' +
-      '<span  data-title="' + marker.title + '" data-link="' + marker.getPosition() + '" id="favorites" class="glyphicon glyphicon-heart-empty"></span>' + '<div>' +
+      '<span  data-title="' + marker.title + '" data-link="' + marker.getPosition() +
+      '" id="favorites" class="glyphicon glyphicon-heart"></span>' + '<div>' +
       '<button class="btn btn-xs btn-primary" data-id="' + ($.inArray(marker, markers) !== -1 ? marker.id : "") +
         '" data-title="' +
       marker.title + '" data-position="' + marker.getPosition().toString() +
@@ -715,6 +745,7 @@ function populateInfoWindow(marker, infowindow){
   }
 }
 
+
 /**
  * This function will hide all other elements
  */
@@ -725,6 +756,7 @@ function hideElems(){
   $("#left-panel").css({"visibility": "hidden"});
 }
 
+
 /**
  * This function will show a single marker only while hiding the rest
  * @param {Number} index The index of the marker to show on the map
@@ -732,7 +764,7 @@ function hideElems(){
 function showMarker(index, infowindow){
   var bounds = new google.maps.LatLngBounds();
   // Hide all markers before displaying the single marker
-  hideMarkers(nearbyMarkers);
+  hideMarkers(placeMarkers);
   hideMarkers(markers);
   // Extend the boundaries of the map for a single marker and display the marker
   markers[index].setMap(map);
@@ -741,6 +773,7 @@ function showMarker(index, infowindow){
   bounds.extend(markers[index].position);
   map.fitBounds(bounds);
 }
+
 
 /**
  * This function will loop through the markers array and display them all
@@ -756,16 +789,21 @@ function showListings(param){
   map.fitBounds(bounds);
 }
 
+
 /**
  * This function will loop through the listings and hide them all
  * @param {Array} markers The array of markers to hide
  */
 function hideMarkers(param){
+  if(param.length === 0){
+    return;
+  }
   for(var i = 0; i < param.length; i++){
     param[i].setMap(null);
   }
-  nearbyMarkers = [];
+  placeMarkers = [];
 }
+
 
 /**
  * This function takes in a COLOR, and then creates a new marker
@@ -784,6 +822,7 @@ function makeMarkerIcon(markerColor){
   };
   return markerImage;
 }
+
 
 /**
  * This function is in response to the user selecting "show route" on one
@@ -837,21 +876,12 @@ function nearbySearchPlaces(){
   var $markerMore = $("#get-places").siblings("#marker-more");
   var centeredMarker = markers[$markerMore.data("id")];
   var lat_lng = centeredMarker.getPosition();
-  console.log(lat_lng);
   var request = {
     location: lat_lng,
     radius: '500',
     type: ['restaurant']
   };
-  hideInfoWindow(centeredMarker, largeInfowindow)
-
-  // var newIcon = {
-  //   url: './assets/star-128.png',
-  //   size: new google.maps.Size(21, 34),
-  //   origin: new google.maps.Point(0, 0),
-  //   anchor: new google.maps.Point(10, 34),
-  //   scaledSize: new google.maps.Size(25, 25)
-  // }
+  hideInfoWindow(centeredMarker, largeInfowindow);
   map.setCenter(lat_lng);
   var nearInfo = new google.maps.InfoWindow({
     maxWidth: 270
@@ -861,17 +891,11 @@ function nearbySearchPlaces(){
   service.nearbySearch(request, function callback(results, status) {
     if (status == google.maps.places.PlacesServiceStatus.OK) {
       var bounds = new google.maps.LatLngBounds();
-      hideMarkers(markers);
       // Hide previous nearby markers
-      hideMarkers(nearbyMarkers);
-      nearbyMarkers = [];
+      hideMarkers(placeMarkers);
+      hideMarkers(markers);
+      placeMarkers = [];
       centeredMarker.setMap(map);
-      // centeredMarker.setIcon(newIcon);
-      // google.maps.event.clearListeners(centeredMarker, 'mouseout');
-      // google.maps.event.clearListeners(centeredMarker, 'mouseover');
-      // centeredMarker.addListener('mouseout', function(){
-      //   this.setAnimation(null);
-      // });
       for(var i = 0; i < results.length; i++){
         var image = {
           url: results[i].icon,
@@ -886,15 +910,17 @@ function nearbySearchPlaces(){
           icon: image,
           animation: google.maps.Animation.DROP
         });
-        nearbyMarkers.push(marker);
+        placeMarkers.push(marker);
         // Create an onclick event to open an infowindow at each marker.
         marker.addListener('click', (function(m){
           return function(){
             m.setAnimation(google.maps.Animation.BOUNCE);
             populateInfoWindow(m, nearInfo);
             if($("#get-directions").length === 0){
-              nearInfo.setContent(nearInfo.getContent() + '<div class="m-title"><button data-origin="' + centeredMarker.id +
-              '" data-destination="' + nearbyMarkers.indexOf(m) + '" id="get-directions"' +
+              nearInfo.setContent(nearInfo.getContent() +
+              '<div class="m-title"><button data-origin="' +
+              centeredMarker.id +
+              '" data-destination="' + placeMarkers.indexOf(m) + '" id="get-directions"' +
               '" class="btn btn-xs btn-primary">Show Directions</button></div>');
             }
           };
@@ -904,8 +930,7 @@ function nearbySearchPlaces(){
           this.setAnimation(null);
         });
       }
-      showListings(nearbyMarkers);
+      showListings(placeMarkers);
     }
   });
 }
-

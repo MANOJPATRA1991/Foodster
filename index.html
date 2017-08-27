@@ -26,34 +26,35 @@
       </div>
       <div id="togglemenu" class="options-box">
         <div>
-          <button data-bind="visible: !isLoggedIn()" id="sign-up" class="btn btn-primary" data-toggle="modal" data-target="#sign-up-modal" type="button"><span class="glyphicon glyphicon-user"></span> Sign up</button>
-          <button data-bind="visible: !isLoggedIn()" id="log-in" class="btn btn-primary" data-toggle="modal" data-target="#log-in-modal" type="button"><span class="glyphicon glyphicon-log-in"></span> Log in</button>
+          <button data-bind="visible: !isLoggedIn()" id="sign-up" class="opt-buttons btn btn-primary" data-toggle="modal" data-target="#sign-up-modal" type="button"><span class="glyphicon glyphicon-user"></span> Sign up</button>
+          <button data-bind="visible: !isLoggedIn()" id="log-in" class="opt-buttons btn btn-primary" data-toggle="modal" data-target="#log-in-modal" type="button"><span class="glyphicon glyphicon-log-in"></span> Log in</button>
           <button data-bind="visible: isLoggedIn()" id="log-out" type="button" class="btn btn-primary" data-bind="click: signOut" data-toggle="modal" data-target="#log-in-modal" type="button"><span class="glyphicon glyphicon-log-out"></span> Log out</button>
           <div data-bind="visible: isLoggedIn">
             <h4>Hello <span id="username" data-bind="text: userName"></span></h4>
-            <button data-bind="{visible: isLoggedIn(), click:showMyPlaces}" type="button" class="btn btn-primary" data-toggle="modal" data-target="#my-places-modal" type="button"> My Places </button>
+            <button data-bind="{visible: isLoggedIn()}" class="btn btn-primary" data-toggle="modal" data-target="#my-places-modal" type="button"> My Places </button>
+            <button data-bind="{click: showFavPlaces, visible: isLoggedIn() && favLocations().length !== 0}" type="button" class="btn btn-primary"> See on map </button>
           </div>
           <hr>
-          <button id="show-listings" class="btn btn-primary" type="button">Show Listings</button>
-          <button id="hide-listings" class="btn btn-primary" type="button">Hide Listings</button>
+          <button id="show-listings" data-bind="click: showList" class="opt-buttons btn btn-primary" type="button"><span class="glyphicon glyphicon-map-marker"></span> Show Listings</button>
+          <button id="hide-listings" data-bind="click: hideList" class="opt-buttons btn btn-primary" type="button"><span class="glyphicon glyphicon-map-marker"></span> Hide Listings</button>
           <hr>
-          <button class="btn btn-primary" id="filter" type="button" data-bind="click: activateSearchByRating">Filter by rating</button>
-          <button class="btn btn-primary" id="reset" type="button" data-bind="click: clearValue">Reset Filters</button>
+          <button class="opt-buttons btn btn-primary" id="filter" type="button" data-bind="click: activateSearchByRating">Filter by rating</button>
+          <button class="opt-buttons btn btn-primary" id="reset" type="button" data-bind="click: clearValue">Reset Filters</button>
           <br>
           <!-- slider to filter based on rating -->
-          <div data-bind="if: searchByRating">
+          <div data-bind="visible: searchByRating">
             <span>1</span><span style="float: right;">10</span><div class="clearfix" data-bind="slider: values, sliderOptions: {min: 1, max: 10, step: 1}"></div>
           </div>
           <br>
           <form class="form-horizontal">
-            <div class="form-group">
+            <div class="search form-group">
               <div class="col-xs-12">
                 <input type="text" class="form-control" placeholder="Search from list" data-bind="value: query, valueUpdate: 'keyup'" autocomplete="off">
               </div><br><br>
             </div>
           </form>
 
-          <div data-bind="if: searchByRating"><p>Showing results for ratings between <span data-bind="text: rateRange"></span></p></div>
+          <div data-bind="visible: searchByRating"><p>Showing results for ratings between <span data-bind="text: rateRange"></span></p></div>
 
           <div class="list-group" data-bind="foreach: sortedLocations">
             <li class="list-group-item  list-default" data-bind="text: title, click: $root.showMarkerSelected"></li>
@@ -62,6 +63,15 @@
         </div>
       </div>
       <div class="container-fluid">
+        <div data-bind="visible: fade" id="alert">
+          <div class="alert alert-info">
+          <button type="button" class="close" data-hide="alert" data-bind="click: toggleFade">
+              <span aria-hidden="true">&times;</span>
+              <span class="sr-only">Close</span>
+         </button>
+          <strong data-bind="text: alert"></strong>
+          </div>
+        </div>
         <div id="map"></div>
       </div>
 
@@ -178,19 +188,19 @@
 
     <!-- Sign in modal -->
     <div id="sign-up-modal" class="modal fade" tabindex="-1" aria-labelled="sign-up-modal" role="dialog">
-      <div class="modal-dialog modal-sm">
+      <div class="dialog modal-dialog">
         <div class="modal-content">
           <div class="modal-heading">
             <h2 style="text-align: center;"> Sign up </h2>
           </div>
           <div class="modal-body">
-            <div>
+            <div class="sign-error">
               <p data-bind="text: message"></p>
             </div>
             <form class="form-horizontal">
               <div class="input">
                 <label for="first-name"> User Name </label>
-                <input type="text" id="first-name" class="form-control" placeholder="Enter email" data-bind="value: userName">
+                <input type="text" id="first-name" class="form-control" placeholder="Enter user name" data-bind="value: userName">
               </div>
               <div class="input">
                 <label for="email"> Email </label>
@@ -216,14 +226,14 @@
 
     <!-- Log in modal -->
     <div id="log-in-modal" class="modal fade" tabindex="-1" aria-labelled="log-in-modal" role="dialog">
-      <div class="modal-dialog modal-sm">
+      <div class="dialog modal-dialog">
         <div class="modal-content">
           <div class="modal-heading">
             <h2 data-bind="visible: !isLoggedIn()" style="text-align: center;"> Log In </h2>
             <h2 data-bind="visible: isLoggedIn()" style="text-align: center;"> Continue to Log out </h2>
           </div>
           <div class="modal-body">
-            <div>
+            <div class="sign-error">
               <p data-bind="text: message"></p>
             </div>
             <form data-bind="visible: !isLoggedIn()" class="form-horizontal">
@@ -252,7 +262,7 @@
 
     <!-- My Places modal -->
     <div id="my-places-modal" class="modal fade" tabindex="-1" aria-labelled="log-in-modal" role="dialog">
-      <div class="modal-dialog modal-sm">
+      <div class="dialog modal-dialog ">
         <div class="modal-content">
           <div class="modal-heading">
             <h2> My Favorite places </h2>
@@ -262,7 +272,7 @@
               <p>No Favorites in your bucket list. Add some.</p>
             </div>
             <div class="list-group" data-bind="{visible: !noFavs(), foreach: favLocations}">
-              <li class="list-group-item  list-default" data-bind="text: title">
+              <li class="list-group-item  list-default"><span data-bind="text: title"></span><span data-bind="click: closePlaces" id="close-places" style='float: right;' class='glyphicon glyphicon-remove'></span></li>
             </div>
           </div>
         </div>

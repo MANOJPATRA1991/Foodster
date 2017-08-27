@@ -21,7 +21,8 @@ function loadData(){
     })
     .fail(function(err){
       venueDataInstance.error(true);
-      venueDataInstance.message('The data cannot be loaded. Please try again after some time.');
+      venueDataInstance.message('The data cannot be loaded. Check your connection or ' +
+        'try again after some time.');
     });
     return false;
 }
@@ -132,7 +133,8 @@ function loadImages(){
     })
     .fail(function(err){
         venueImagesInstance.error(true);
-        venueImagesInstance.message('The data cannot be loaded. Please try again after some time.');
+        venueImagesInstance.message('The data cannot be loaded. Check your connection or' +
+          ' try again after some time.');
     });
     return false;
 }
@@ -243,7 +245,8 @@ function loadTips(){
     })
     .fail(function(err){
         venueTipsInstance.error(true);
-        venueTipsInstance.message('The data cannot be loaded. Please try again after some time.');
+        venueTipsInstance.message('The data cannot be loaded. Check your connection or' +
+          ' try again after some time.');
     });
     return false;
 }
@@ -286,7 +289,8 @@ function venueTips(venueId){
   })
   .fail(function(err){
     venueTipsInstance.error(true);
-    venueTipsInstance.message("The data cannot be loaded. Please try again after some time.");
+    venueTipsInstance.message('The data cannot be loaded. Check your connection or' +
+      ' try again after some time.');
   });
   return false;
 }
@@ -340,7 +344,8 @@ function venueDetails(venueId, choice){
   })
   .fail(function(err){
     venueDataInstance.error(true);
-    venueDataInstance.message('The data cannot be loaded. Please try again after some time.');
+    venueDataInstance.message('The data cannot be loaded. Check your connection or ' +
+     'try again after some time.');
   });
   return false;
 }

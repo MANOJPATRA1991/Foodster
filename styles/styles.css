@@ -19,9 +19,6 @@ body {
   position: relative;
 }
 
-.menu-row {
-}
-
 input {
   font-size: 12px;
 }
@@ -33,12 +30,7 @@ h1 {
   text-align: center;
 }
 
-#sign-up,
-#log-in,
-#hide-listings,
-#show-listings,
-#reset,
-#filter {
+.opt-buttons {
   width: 49%;
 }
 
@@ -85,8 +77,8 @@ hr {
   z-index: 500;
   background: #fff;
   border-radius: 0;
-  top: 41px;
-  bottom: 0;
+  top: 40px;
+  bottom: 50px;
   line-height: 35px;
   padding: 10px 10px 30px 10px;
   text-align: left;
@@ -227,6 +219,10 @@ select.form-control {
   #menu-panel, #left-panel {
     width: 100%;
     left: 0;
+  }
+
+  #options-box, #right-panel {
+    width: 100%;
   }
 }
 
@@ -484,6 +480,40 @@ img#photo-img {
   color: #9ABAF3;
 }
 
-.glyphicon-heart-empty {
-  font-size: 50px;
+.glyphicon-heart {
+  cursor: pointer;
+  font-size: 25px;
+  color: red;
+  -webkit-text-shadow: 0 2px 6px rgba(0,0,0,.3);
+  -moz-text-shadow: 0 2px 6px rgba(0,0,0,.3);
+  text-shadow: 0 2px 6px rgba(0,0,0,.3);
+}
+
+#alert {
+  text-align: center;
+  -webkit-box-shadow: 0 2px 6px rgba(0,0,0,.3);
+  -moz-box-shadow: 0 2px 6px rgba(0,0,0,.3);
+  box-shadow: 0 2px 6px rgba(0,0,0,.3);
+}
+
+
+.dialog {
+  width: 400px;
+  margin: 20px auto;
+}
+
+#alert .alert {
+  margin-bottom: 0;
+}
+
+.sign-error {
+  color: red;
+}
+
+#close-places {
+  color: red;
+}
+
+.search {
+  margin-bottom: 0;
 }
