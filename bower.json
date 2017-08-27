@@ -1,0 +1,23 @@
+{
+  "name": "Foodsters",
+  "description": "A restaurant finder web app",
+  "main": "scripts/app.js",
+  "keywords": [
+    "Foodster"
+  ],
+  "authors": [
+    "Manoj Patra"
+  ],
+  "license": "MIT",
+  "homepage": "https://github.com/MANOJPATRA1991/Foodster",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "knockout-postbox": "^0.6.0"
+  }
+}
