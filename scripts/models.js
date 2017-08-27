@@ -197,6 +197,8 @@ function LogInModel(){
       self.isLoggedIn(false);
       self.userName("");
       self.favLocations([]);
+      // when user is logged out, reload the web app
+      window.open('https://manojpatra1991.github.io/Foodster/', "_self");
     });
   };
 
