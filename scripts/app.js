@@ -9,9 +9,6 @@ var markers = [];
 // To store the direction display renderer instance
 var directionsDisplay;
 
-// This global polygon variable is to ensure only ONE polgon is rendered
-var polygon = null;
-
 // Create placeMarkers array to use in multiple functions to have control
 // over the number of places that show.
 var placeMarkers = [];
@@ -332,7 +329,7 @@ function initMap() {
       hideMarkers(markers);
       placeMarkers = new Markers(self.favArray());
       showListings(placeMarkers);
-    }
+    };
 
     // An observable variable to filter locations based on an input field
     self.locations = ko.computed(function() {
@@ -397,15 +394,11 @@ function initMap() {
       if(self.userId() !== undefined){
         var favPos = $("#favorites").data("link");
         var title = $("#favorites").data("title");
-        var favLocations = [];
         // Get the latitude
         var lat = favPos.substring(favPos.lastIndexOf("(")+1,favPos.lastIndexOf(","));
 
         // Get the longitude
         var lng = favPos.substring(favPos.lastIndexOf(",")+2,favPos.lastIndexOf(")"));
-
-        // Keep track if data exists in firebase database
-        var isData = false;
 
         // Get a reference to the database service
         var data = {
@@ -414,17 +407,19 @@ function initMap() {
           lng: lng
         };
 
+        var updates = {};
+
         // listen to firebase data on click
         firebase.database().ref().child('/users/' + self.userId() + '/favorites/').once('value', function(snap){
           // remove data if it exists in the database
           if(snap.hasChild(data.title)) {
-            var updates = {};
+            updates = {};
             updates['/users/' + self.userId() + '/favorites/' + data.title] = null;
             firebase.database().ref().update(updates);
             self.alert(data.title + " removed from your favorites");
           }else{
             // add data to database if it doesn't already exist
-            var updates = {};
+            updates = {};
             updates['/users/' + self.userId() + '/favorites/' + data.title] = data;
             firebase.database().ref().update(updates);
             self.alert(data.title + " added to your favorites");
@@ -832,8 +827,7 @@ function makeMarkerIcon(markerColor){
  * @returns {Object} The markerImage object
  */
 function displayDirections(origin, destination){
-  var directionsService = new google.maps.DirectionsService;
-  var infoWindow = new google.maps.InfoWindow();
+  var directionsService = new google.maps.DirectionsService();
   // Get mode again from the user entered value.
   var request = {
     // The origin is the passed in marker's position.
@@ -890,7 +884,6 @@ function nearbySearchPlaces(){
   service = new google.maps.places.PlacesService(map);
   service.nearbySearch(request, function callback(results, status) {
     if (status == google.maps.places.PlacesServiceStatus.OK) {
-      var bounds = new google.maps.LatLngBounds();
       // Hide previous nearby markers
       hideMarkers(placeMarkers);
       hideMarkers(markers);

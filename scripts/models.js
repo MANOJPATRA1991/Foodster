@@ -100,27 +100,22 @@ function SignUpModel(){
   self.signUp = function(){
     if (self.email() !== "" && self.userPassword() !== "" &&
       self.userPassword() === self.rePassword()){
-      console.log(true);
       firebase.auth().createUserWithEmailAndPassword(self.email(), self.userPassword())
       .then(function(){
-        console.log("success");
         self.isLoggedIn(true);
+        self.userName(self.userName());
         var user = firebase.auth().currentUser;
         if (user !== null){
           user.updateProfile({
             displayName: self.userName()
           });
           self.userId(user.uid);
-          user.providerData.forEach(function (profile) {
-            self.userName(profile.displayName);
-          });
         }
         // Hide the sign up modal
         $("#sign-up-modal").modal('hide');
       }, function(error) {
         // Handle Errors here.
         var errorCode = error.code;
-        var errorMessage = error.message;
         if(errorCode === 'auth/argument-error'){
           if(self.email === ""){
             self.message("Please enter a valid email.");
@@ -172,7 +167,6 @@ function LogInModel(){
         self.isLoggedIn(true);
         if (user !== null) {
           self.userId(user.uid);
-          console.log(self.userId());
           user.providerData.forEach(function (profile) {
             self.userName(profile.displayName);
           });
@@ -182,7 +176,6 @@ function LogInModel(){
       }, function(error) {
         // Handle Errors here.
         var errorCode = error.code;
-        var errorMessage = error.message;
         if(errorCode === 'auth/invalid-email'){
           self.message("Please try again with a valid email address.");
         }else if(errorCode === 'auth/user-not-found'){
@@ -226,14 +219,12 @@ function favoritesModel(){
 
   // Action on opening the my-places-modal modal
   $('#my-places-modal').on('shown.bs.modal', function(){
-    console.log(self.userId());
     if(self.user() !== undefined){
       // Sync changes
       firebase.database().ref().child('/users/' + self.user() + '/favorites/').on('value', function(snap){
         self.favLocations([]);
         if(snap !== null){
           snap.forEach(function(childSnap){
-            var childKey = childSnap.key;
             var childObj = childSnap.val();
             var location = {
               title: childObj.title,
@@ -244,7 +235,6 @@ function favoritesModel(){
             };
             self.favLocations.push(location);
           });
-          console.log(self.favLocations());
         }else{
           self.noFavs(true);
         }

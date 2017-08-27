@@ -11,10 +11,10 @@ ko.components.register('venue-tips-template', {
 		});
 		this.fullName = ko.computed(function(){
 			if(this.firstName !== "" && this.firstName !== ""){
-				return params.value.firstName + " " + params.value.lastName;	
+				return params.value.firstName + " " + params.value.lastName;
 			}
-		})
-		this.review = params.value.review;	
+		});
+		this.review = params.value.review;
 	},
 	template: { element: 'venue-template'}
-})
+});

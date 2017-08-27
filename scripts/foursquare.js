@@ -121,7 +121,6 @@ function returnVenue(data){
  * This function when called loads images for a venue
  */
 function loadImages(){
-  var $imageSquare = $("#image-square");
   var fourSquareUrl = fourSquare();
   var venue = {};
   $.getJSON(fourSquareUrl)
@@ -147,7 +146,6 @@ function loadImages(){
 function returnVenueImage(data){
   var venueDetails = data;
   var images = [];
-  var $imageSquare = $("#image-square");
   var modalHTML = '';
 
   venueImagesInstance.error(false);
@@ -233,7 +231,6 @@ $(document).on('click', 'button.controls', function(){
  * This function when called loads the user tips for a venue
  */
 function loadTips(){
-  var $venueTips = $("#venue-tips");
   var fourSquareUrl = fourSquare();
   var venue = {};
   $.getJSON(fourSquareUrl)
@@ -257,14 +254,12 @@ function loadTips(){
  * @param {Number} venueId
  */
 function venueTips(venueId){
-  var $venueTips = $("#venue-tips");
   var fourSquareTips = "https://api.foursquare.com/v2/venues/" + venueId + "/tips";
   fourSquareTips += '?' + $.param({
     'v': '20170820',
     'client_id': FOURSQUARE_CLIENT_ID,
     'client_secret': FOURSQUARE_CLIENT_SECRET
   });
-  var result = '';
   venueTipsInstance.error(false);
   venueTipsInstance.message("");
   venueTipsInstance.tips.removeAll();
@@ -301,7 +296,6 @@ function venueTips(venueId){
  */
 function fourSquare(){
   var $markerMore = $("#marker-more");
-  var $venueTips = $("#venue-tips");
 
   var lat_lng = $markerMore.data("position").toString();
   lat_lng = lat_lng.substr(1, lat_lng.length - 2);
@@ -331,7 +325,6 @@ function venueDetails(venueId, choice){
     'client_id': FOURSQUARE_CLIENT_ID,
     'client_secret': FOURSQUARE_CLIENT_SECRET
   });
-  var result = '';
   $.getJSON(fourSquareVenue)
   .done(function(data){
     if(data.response.venue !== null && data.response.venue !== undefined){
