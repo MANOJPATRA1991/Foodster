@@ -3,7 +3,7 @@
 This is Project no. 5 from Udacity's [Full Stack Web Developer Nanodegree Program](https://in.udacity.com/course/full-stack-web-developer-nanodegree--nd004/). The project is available live on [Feedster](https://manojpatra1991.github.io/Foodster/).
 
 ## Table of Contents
-  1. [Project Statement](#Project Statement)
+  1. [Project Statement](#project-statement)
   2. [Description](#description)
   3. [Reference](#reference)
   4. [License](#license)
