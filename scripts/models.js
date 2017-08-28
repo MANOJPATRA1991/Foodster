@@ -1,7 +1,7 @@
 /**
  * This function is our model for venue data
  */
-function VenueDataModel(){
+function VenueDataViewModel(){
   var self = this;
   self.id = ko.observable();
   self.name = ko.observable();
@@ -44,29 +44,92 @@ function VenueDataModel(){
 }
 
 // Apply binding to element with id menu-panel
-var venueDataInstance = new VenueDataModel();
+var venueDataInstance = new VenueDataViewModel();
 ko.applyBindings(venueDataInstance, document.getElementById("menu-panel"));
 
 
 /**
  * This function is our model for venue images
  */
-function VenueImagesModel(){
+function VenueImagesViewModel(){
   var self = this;
-  self.images = ko.observableArray();
+  self.images = ko.observableArray().syncWith("ImageArray");
   self.error = ko.observable(false);
   self.message = ko.observable("");
+  self.index = ko.observable().syncWith("Index");
+  self.src = ko.observable().syncWith("Image");
+  self.openImageModal = function(){
+    self.index(self.images.indexOf(this));
+    var src = this.src.replace('171x180', '960x720');;
+    self.src(src);
+    console.log(self.index());
+  };
 }
 
 // Apply binding to element with id photo-panel
-var venueImagesInstance = new VenueImagesModel();
+var venueImagesInstance = new VenueImagesViewModel();
 ko.applyBindings(venueImagesInstance, document.getElementById("photo-panel"));
 
 
 /**
+ * This function is our model for modal images
+ */
+ function ModalImagesViewModal(){
+  self.modalSrc = ko.observable().syncWith("Image");
+  self.index = ko.observable().syncWith("Index");
+  self.next = ko.observable();
+  self.prev = ko.observable();
+  self.images = ko.observableArray().syncWith("ImageArray");
+
+  $("#modalImages").on('shown.bs.modal', function(){
+    console.log(self.modalSrc());
+    self.next(self.index() + 2);
+    self.next(self.index());
+    var newPrevIndex = parseInt(self.next()) - 1;
+    var newNextIndex = parseInt(newPrevIndex) + 2;
+    if(self.next() !== self.images().length){
+      self.prev(newPrevIndex);
+      self.next(newNextIndex);
+    }else if(self.prev() >= 0){
+      self.prev(newPrevIndex);
+      self.next(newNextIndex);
+    }
+  });
+
+  // change previous
+  self.changeNext = function(){
+    var newPrevIndex = parseInt(self.next()) - 1;
+    var newNextIndex = parseInt(newPrevIndex) + 2;
+    if(self.next() !== self.images().length){
+      self.modalSrc(self.images()[self.next()]
+      .src.replace('171x180', '960x720'));
+      self.prev(newPrevIndex);
+      self.next(newNextIndex);
+    }
+  };
+  // change next
+  self.changePrev = function(){
+    var newPrevIndex = parseInt(self.prev()) - 1;
+    var newNextIndex = parseInt(newPrevIndex) + 2;
+    if(self.prev() >= 0){
+      self.modalSrc(self.images()[self.prev()]
+      .src.replace('171x180', '960x720'));
+      self.prev(newPrevIndex);
+      self.next(newNextIndex);
+    }
+  };
+ }
+
+ $("#modalImages").on('hidden.bs.modal', function(){
+  self.modalSrc("");
+ });
+
+ ko.applyBindings(new ModalImagesViewModal(), document.getElementById("modalImages"));
+
+/**
  * This function is our model for venue tips
  */
-function VenueTipsModel(){
+function VenueTipsViewModel(){
   var self = this;
   self.tips = ko.observableArray();
   self.error = ko.observable(false);
@@ -74,14 +137,14 @@ function VenueTipsModel(){
 }
 
 // Apply binding to element with id left-panel
-var venueTipsInstance = new VenueTipsModel();
+var venueTipsInstance = new VenueTipsViewModel();
 ko.applyBindings(venueTipsInstance, document.getElementById("left-panel"));
 
 
 /**
  * This function is our model for signing up users
  */
-function SignUpModel(){
+function SignUpViewModel(){
 
   var self = this;
   self.userName = ko.observable()
@@ -142,13 +205,13 @@ function SignUpModel(){
 }
 
 // Apply binding to element with id sign-up-modal
-ko.applyBindings(new SignUpModel(), document.getElementById("sign-up-modal"));
+ko.applyBindings(new SignUpViewModel(), document.getElementById("sign-up-modal"));
 
 
 /**
  * This function is our model for logging in users
  */
-function LogInModel(){
+function LogInViewModel(){
   self.email = ko.observable('');
   self.password = ko.observable('');
   self.userName = ko.observable().publishOn("currentUser");
@@ -209,13 +272,13 @@ function LogInModel(){
 }
 
 // Apply binding to element with id log-in-modal
-ko.applyBindings(new LogInModel(), document.getElementById("log-in-modal"));
+ko.applyBindings(new LogInViewModel(), document.getElementById("log-in-modal"));
 
 
 /**
  * This function is our model for user's favorite places
  */
-function favoritesModel(){
+function favoritesViewModel(){
   self.user = ko.observable().subscribeTo("currentUserId");
   self.favLocations = ko.observableArray().publishOn("FavArray");
   self.noFavs = ko.observable(false);
@@ -238,18 +301,18 @@ function favoritesModel(){
             };
             self.favLocations.push(location);
           });
+          if(self.favLocations().length === 0){
+              self.noFavs(true);
+          }else{
+              self.noFavs(false);
+          }
         }
       });
-    }
-    if(self.favLocations().length === 0){
-        self.noFavs(true);
-    }else{
-        self.noFavs(false);
     }
   });
 
 
-  self.closePlaces = function(){
+  self.removePlaces = function(){
     var elem = this.title;
     console.log(elem);
     firebase.database().ref().child('/users/' + self.userId() + '/favorites/').once('value', function(snap){
@@ -269,4 +332,4 @@ function favoritesModel(){
 }
 
 // Apply binding to element with id my-places-modal
-ko.applyBindings(new favoritesModel(), document.getElementById("my-places-modal"));
+ko.applyBindings(new favoritesViewModel(), document.getElementById("my-places-modal"));

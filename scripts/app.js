@@ -21,488 +21,360 @@ var largeInfowindow = '';
  */
 function initMap() {
 
-  // Create a styles array to use with the map
-  var styledMapType = new google.maps.StyledMapType([
-          {
-            featureType: 'water',
-            stylers: [
-              { color: '#19a0d8' }
-            ]
-          },
-          {
-            featureType: 'administrative',
-            elementType: 'labels.text.stroke',
-            stylers: [
-              { color: '#ffffff' },
-              { weight: 6 }
-            ]
-          },
-          {
-            featureType: 'administrative',
-            elementType: 'labels.text.fill',
-            stylers: [
-              { color: '#e85113' }
-            ]
-          },
-          {
-            featureType: 'road.highway',
-            elementType: 'geometry.stroke',
-            stylers: [
-              { color: '#efe9e4' },
-              { lightness: -40 }
-            ]
-          },
-          {
-            featureType: 'transit.station',
-            stylers: [
-              { weight: 9 },
-              { hue: '#e85113' }
-            ]
-          },
-          {
-            featureType: 'road.highway',
-            elementType: 'labels.icon',
-            stylers: [
-              { visibility: 'off' }
-            ]
-          },
-          {
-            featureType: 'water',
-            elementType: 'labels.text.stroke',
-            stylers: [
-              { lightness: 100 }
-            ]
-          },
-          {
-            featureType: 'water',
-            elementType: 'labels.text.fill',
-            stylers: [
-              { lightness: -100 }
-            ]
-          },
-          {
-            featureType: 'poi',
-            elementType: 'geometry',
-            stylers: [
-              { visibility: 'on' },
-              { color: '#f0e4d3' }
-            ]
-          },
-          {
-            featureType: 'road.highway',
-            elementType: 'geometry.fill',
-            stylers: [
-              { color: '#efe9e4' },
-              { lightness: -25 }
-            ]
-          }
-        ],
-        {name: 'Styled Map'});
+  $.getJSON('http://localhost:8000/json/app.json')
+  .done(function(data){
+    mapLoad(data[0], data[1]);
+  });
 
-  // Constructor creates a new map - only center and zoom are required
-  map = new google.maps.Map(document.getElementById('map'), {
-    // LatLng literal
-    center: {lat: 12.971599, lng: 77.594563},
-    zoom: 13,
-    mapTypeControlOptions: {
-            mapTypeIds: ['roadmap', 'satellite', 'hybrid', 'terrain',
-                    'styled_map'],
-            style: google.maps.MapTypeControlStyle.HORIZONTAL_MENU,
-            position: google.maps.ControlPosition.TOP_CENTER
-          },
-    scaleControl: true,
-    streetViewControl: true,
-    streetViewControlOptions: {
-        position: google.maps.ControlPosition.RIGHT_DOWN
-    },
-    fullscreenControl: true,
-    fullscreenControlOptions: {
-        position: google.maps.ControlPosition.BOTTOM_RIGHT
+  var mapLoad = function (mapStyle, mapLocations){
+    // Create a styles array to use with the map
+    var styledMapType = new google.maps.StyledMapType(mapStyle, {name: 'Styled Map'});
+
+    // Constructor creates a new map - only center and zoom are required
+    map = new google.maps.Map(document.getElementById('map'), {
+      // LatLng literal
+      center: {lat: 12.971599, lng: 77.594563},
+      zoom: 13,
+      mapTypeControlOptions: {
+              mapTypeIds: ['roadmap', 'satellite', 'hybrid', 'terrain',
+                      'styled_map'],
+              style: google.maps.MapTypeControlStyle.HORIZONTAL_MENU,
+              position: google.maps.ControlPosition.TOP_CENTER
+            },
+      scaleControl: true,
+      streetViewControl: true,
+      streetViewControlOptions: {
+          position: google.maps.ControlPosition.RIGHT_DOWN
+      },
+      fullscreenControl: true,
+      fullscreenControlOptions: {
+          position: google.maps.ControlPosition.BOTTOM_RIGHT
+      }
+    });
+
+    // Associate the styled map with the MapTypeId and set it to display.
+    map.mapTypes.set('styled_map', styledMapType);
+    map.setMapTypeId('styled_map');
+
+    // Instantiate info window with default width of 350px
+    largeInfowindow = new google.maps.InfoWindow({
+      maxWidth: 270
+    });
+
+    // Style the markers to create our listing marker icon.
+    var defaultIcon = makeMarkerIcon('0091ff');
+
+    // Create a "highlighted location" marker color for when the user
+    // mouses over the marker.
+    var highlightedIcon = makeMarkerIcon('FFFF24');
+
+
+    /**
+     * This function creates default markers
+     * @param {Array} locations
+     * @returns {Object}
+     */
+    function Markers(locations){
+      var self = this;
+      self.markers = [];
+
+      /**
+       * Handler function for click event on a marker
+       */
+      self.clickHandler = function(){
+        this.setAnimation(google.maps.Animation.BOUNCE);
+        populateInfoWindow(this, largeInfowindow);
+        hideElems();
+      };
+
+      /**
+       * Handler function for mouseover event on a marker
+       */
+      self.mouseoverHandler = function(){
+        this.setIcon(highlightedIcon);
+      };
+
+      /**
+       * Handler function for mouseout event on a marker
+       */
+      self.mouseoutHandler = function(){
+        this.setAnimation(null);
+        this.setIcon(defaultIcon);
+      };
+
+      for (var i = 0; i < locations.length; i++) {
+        var position = locations[i].location;
+        var title = locations[i].title;
+
+        // Create a marker object
+          var marker = new google.maps.Marker({
+            position: position,
+            title: title,
+            icon: defaultIcon,
+            animation: google.maps.Animation.DROP,
+          id: i
+        });
+
+        // Push the marker to our array of markers.
+        self.markers.push(marker);
+
+        // Create an onclick event to open an infowindow at each marker.
+        marker.addListener('click', self.clickHandler);
+
+        // Change the color of the marker on mouseover
+        marker.addListener('mouseover', self.mouseoverHandler);
+
+        // Reset the marker color to default on mouseout
+        marker.addListener('mouseout', self.mouseoutHandler);
+      }
+
+      return self.markers;
     }
-  });
-
-  // Associate the styled map with the MapTypeId and set it to display.
-  map.mapTypes.set('styled_map', styledMapType);
-  map.setMapTypeId('styled_map');
-
-  // Instantiate info window with default width of 350px
-  largeInfowindow = new google.maps.InfoWindow({
-    maxWidth: 270
-  });
-
-  // Style the markers to create our listing marker icon.
-  var defaultIcon = makeMarkerIcon('0091ff');
-
-  // Create a "highlighted location" marker color for when the user
-  // mouses over the marker.
-  var highlightedIcon = makeMarkerIcon('FFFF24');
-
-
-  /**
-   * This function creates default markers
-   * @param {Array} locations
-   * @returns {Object}
-   */
-  function Markers(locations){
-    var self = this;
-    self.markers = [];
 
     /**
-     * Handler function for click event on a marker
+     * This function is our locations viewmodel
      */
-    self.clickHandler = function(){
-      this.setAnimation(google.maps.Animation.BOUNCE);
-      populateInfoWindow(this, largeInfowindow);
-      hideElems();
-    };
+    function LocationsViewModel(){
+      var self = this;
+      self.query = ko.observable('');
+      self.userId = ko.observable().subscribeTo("currentUserId");
+      self.isLoggedIn = ko.observable().subscribeTo("isLoggedIn");
+      self.userName = ko.observable().subscribeTo("currentUser");
+      self.favArray = ko.observableArray().subscribeTo("FavArray");
+      self.alert = ko.observable().publishOn("Alert");
+      self.fade = ko.observable(false).syncWith("Fade");
 
-    /**
-     * Handler function for mouseover event on a marker
-     */
-    self.mouseoverHandler = function(){
-      this.setIcon(highlightedIcon);
-    };
+      // Show Listings button
+      self.showList = function(){
+        hideMarkers(placeMarkers);
+        showListings(markers);
+      };
 
-    /**
-     * Handler function for mouseout event on a marker
-     */
-    self.mouseoutHandler = function(){
-      this.setAnimation(null);
-      this.setIcon(defaultIcon);
-    };
+      // Hide Listings button
+      self.hideList = function(){
+        hideMarkers(placeMarkers);
+        hideMarkers(markers);
+      };
 
-    for (var i = 0; i < locations.length; i++) {
-      var position = locations[i].location;
-      var title = locations[i].title;
+      // An array of locations
+      var locations = mapLocations;
 
-      // Create a marker object
-        var marker = new google.maps.Marker({
-          position: position,
-          title: title,
-          icon: defaultIcon,
-          animation: google.maps.Animation.DROP,
-        id: i
+      // Create markers for the default locations
+      markers = new Markers(locations);
+
+      /**
+       * Shows the selected marker on the screen
+       */
+      self.showMarkerSelected = function(){
+        showMarker(locations.indexOf(this), largeInfowindow);
+      };
+
+      // Values for the rating filter
+      self.values = ko.observable([1, 10]);
+
+      /**
+       * Hide all markers except default markers
+       */
+      self.clearValue = function() {
+         self.query('');
+         self.values([1, 10]);
+         hideMarkers(placeMarkers);
+         showListings(markers);
+      };
+
+      self.searchByRating = ko.observable(false);
+
+      /**
+       * This function activates search by rating
+       */
+      self.activateSearchByRating = function(){
+        self.clearValue();
+        self.searchByRating(!self.searchByRating());
+      };
+
+      self.showFavPlaces = function(){
+        hideMarkers(placeMarkers);
+        hideMarkers(markers);
+        placeMarkers = new Markers(self.favArray());
+        showListings(placeMarkers);
+      };
+
+      // An observable variable to filter locations based on an input field
+      self.locations = ko.computed(function() {
+          var search = self.query().toLowerCase();
+          return ko.utils.arrayFilter(locations, function(location) {
+              var index = locations.indexOf(location);
+
+              // Filter by both rating and text
+              if(self.searchByRating && search !== ""){
+                hideMarkers(placeMarkers);
+                if (location.rating >= self.values()[0] &&
+                    location.rating <= self.values()[1] &&
+                    location.title.toLowerCase().indexOf(search) >= 0){
+                    markers[index].setMap(map);
+                }else{
+                  markers[index].setMap(null);
+                }
+                return (location.rating >= self.values()[0] &&
+                        location.rating <= self.values()[1] &&
+                        location.title.toLowerCase().indexOf(search) >= 0);
+              }
+
+              // Filter by text only
+              if(search !== ""){
+                hideMarkers(placeMarkers);
+                if(location.title.toLowerCase().indexOf(search) >= 0){
+                  markers[index].setMap(map);
+                }else{
+                  markers[index].setMap(null);
+                }
+                return location.title.toLowerCase().indexOf(search) >= 0;
+              }
+
+              // Filter by search only
+              if(self.searchByRating){
+                hideMarkers(placeMarkers);
+                if(location.rating >= self.values()[0] && location.rating <= self.values()[1]){
+                   markers[index].setMap(map);
+                }else{
+                  markers[index].setMap(null);
+                }
+                return (location.rating >= self.values()[0] && location.rating <= self.values()[1]);
+              }
+          });
+      }, self);
+
+
+      // An observable variable to sort locations alphabetically
+      self.sortedLocations = ko.computed(function() {
+          return self.locations().sort(function (left, right){
+            return left.title == right.title ? 0 :
+                (left.title < right.title ? -1 : 1);
+          });
       });
 
-      // Push the marker to our array of markers.
-      self.markers.push(marker);
+      // Custom binding for slider
+      ko.bindingHandlers.slider = {
+        init: function (element, valueAccessor, allBindings) {
+            var options = allBindings().sliderOptions || {};
+            var $el = $(element);
+            // current value
+            var observable = valueAccessor();
+            options.range = true;
 
-      // Create an onclick event to open an infowindow at each marker.
-      marker.addListener('click', self.clickHandler);
+            // function to update ui.values on slide
+            options.slide = function(e, ui) {
+                observable(ui.values);
+            };
 
-      // Change the color of the marker on mouseover
-      marker.addListener('mouseover', self.mouseoverHandler);
+            // clean-up logic that runs when slider is removed by Knockout.
+            ko.utils.domNodeDisposal.addDisposeCallback(element, function () {
+                $el.slider("destroy");
+            });
 
-      // Reset the marker color to default on mouseout
-      marker.addListener('mouseout', self.mouseoutHandler);
-    }
-
-    return self.markers;
-  }
-
-  /**
-   * This function is our locations viewmodel
-   */
-  function LocationsViewModel(){
-    var self = this;
-    self.query = ko.observable('');
-    self.userId = ko.observable().subscribeTo("currentUserId");
-    self.isLoggedIn = ko.observable().subscribeTo("isLoggedIn");
-    self.userName = ko.observable().subscribeTo("currentUser");
-    self.favArray = ko.observableArray().subscribeTo("FavArray");
-    self.alert = ko.observable().publishOn("Alert");
-    self.fade = ko.observable(false).syncWith("Fade");
-
-    // Show Listings button
-    self.showList = function(){
-      hideMarkers(placeMarkers);
-      showListings(markers);
-    };
-
-    // Hide Listings button
-    self.hideList = function(){
-      hideMarkers(placeMarkers);
-      hideMarkers(markers);
-    };
-
-    // An array of locations
-    var locations = [
-        {
-          title: 'Toscano',
-          location: {
-            lat: 12.937074,
-            lng: 77.585257
-          },
-          rating: 8.2
+            $el.slider(options);
         },
-        {
-          title: 'McDonald\'s Family Restaurant',
-          location: {
-            lat: 12.975947888116648,
-            lng: 77.59833873337735
-          },
-          rating: 5.5
-        },
-        {
-          title: 'Hotel Shalimar Bar and Restaurant',
-          location: {
-            lat: 12.978237128484729,
-            lng: 77.63729413423935
-          },
-          rating: 7.5
-        },
-        {
-          title: 'J W Kitchen',
-          location: {
-            lat: 12.972084,
-            lng: 77.594908
-          },
-          rating: 9
-        },
-        {
-          title: 'Smoke House Deli',
-          location: {
-            lat: 12.9716781033626,
-            lng: 77.59829956419803
-          },
-          rating: 8.8
-        },
-        {
-          title: 'Peace Restaurant',
-          location: {
-            lat: 12.961816690417804,
-            lng: 77.59796942343216
-          },
-          rating: 1
-        },
-        {
-          title: "Sunny\'s\'",
-          location: {
-            lat: 12.972027516492824,
-            lng: 77.59850100554686
-          },
-          rating: 8.3
-        },
-        {
-          title: 'Airlines Hotel',
-          location: {
-            lat: 12.973048836038515,
-            lng: 77.60000061317432
-          },
-          rating: 8.7
-        },
-        {
-          title: 'Truffles - Ice & Spice',
-          location: {
-            lat: 12.971556788840994,
-            lng: 77.60106935122289
-          },
-          rating: 9.2
-        },
-        {
-          title: "Harima",
-          location: {
-            lat: 12.96741309690568,
-            lng: 77.6004159450531
-          },
-          rating: 9.1
-        },
-        {
-          title: 'Imperial Restaurant',
-          location: {
-            lat: 12.982122329627389,
-            lng: 77.6031788201695
-          },
-          rating: 5.7
+        update: function (element, valueAccessor) {
+            var $el = $(element);
+            var value = ko.unwrap(valueAccessor());
+            $el.slider("values", value);
         }
-      ];
+      };
 
-    // Create markers for the default locations
-    markers = new Markers(locations);
+      // Display range selected for filtering
+      self.rateRange = ko.computed(function() {
+          return self.values()[0] + " - " + self.values()[1] ;
+      }, self);
 
-    /**
-     * Shows the selected marker on the screen
-     */
-    self.showMarkerSelected = function(){
-      showMarker(locations.indexOf(this), largeInfowindow);
-    };
+      // Add favorite lat-lng to database if user is logged in
+      $(document).on('click', '#favorites', function(){
+        if(self.userId() !== undefined){
+          var favPos = $("#favorites").data("link");
+          var title = $("#favorites").data("title");
+          // Get the latitude
+          var lat = favPos.substring(favPos.lastIndexOf("(")+1,favPos.lastIndexOf(","));
 
-    // Values for the rating filter
-    self.values = ko.observable([1, 10]);
+          // Get the longitude
+          var lng = favPos.substring(favPos.lastIndexOf(",")+2,favPos.lastIndexOf(")"));
 
-    /**
-     * Hide all markers except default markers
-     */
-    self.clearValue = function() {
-       self.query('');
-       self.values([1, 10]);
-       hideMarkers(placeMarkers);
-       showListings(markers);
-    };
-
-    self.searchByRating = ko.observable(false);
-
-    /**
-     * This function activates search by rating
-     */
-    self.activateSearchByRating = function(){
-      self.clearValue();
-      self.searchByRating(!self.searchByRating());
-    };
-
-    self.showFavPlaces = function(){
-      hideMarkers(placeMarkers);
-      hideMarkers(markers);
-      placeMarkers = new Markers(self.favArray());
-      showListings(placeMarkers);
-    };
-
-    // An observable variable to filter locations based on an input field
-    self.locations = ko.computed(function() {
-        var search = self.query().toLowerCase();
-        return ko.utils.arrayFilter(locations, function(location) {
-            if(self.query() !== "" && location.title.toLowerCase().indexOf(search) >= 0){
-              showMarker(locations.indexOf(location), largeInfowindow);
-            }
-            if(search !== ""){
-              return location.title.toLowerCase().indexOf(search) >= 0;
-            }
-            if(self.searchByRating){
-              return (location.rating >= self.values()[0] && location.rating <= self.values()[1]);
-            }
-        });
-    }, self);
-
-
-    // An observable variable to sort locations alphabetically
-    self.sortedLocations = ko.computed(function() {
-        return self.locations().sort(function (left, right){
-          return left.title == right.title ? 0 :
-              (left.title < right.title ? -1 : 1);
-        });
-    });
-
-    // Custom binding for slider
-    ko.bindingHandlers.slider = {
-      init: function (element, valueAccessor, allBindings) {
-          var options = allBindings().sliderOptions || {};
-          var $el = $(element);
-          // current value
-          var observable = valueAccessor();
-          options.range = true;
-
-          // function to update ui.values on slide
-          options.slide = function(e, ui) {
-              observable(ui.values);
+          // Get a reference to the database service
+          var data = {
+            title: title,
+            lat: lat,
+            lng: lng
           };
 
-          // clean-up logic that runs when slider is removed by Knockout.
-          ko.utils.domNodeDisposal.addDisposeCallback(element, function () {
-              $el.slider("destroy");
+          var updates = {};
+
+          // listen to firebase data on click
+          firebase.database().ref().child('/users/' + self.userId() + '/favorites/').once('value', function(snap){
+            // remove data if it exists in the database
+            if(snap.hasChild(data.title)) {
+              updates = {};
+              updates['/users/' + self.userId() + '/favorites/' + data.title] = null;
+              firebase.database().ref().update(updates);
+              self.alert(data.title + " removed from your favorites");
+            }else{
+              // add data to database if it doesn't already exist
+              updates = {};
+              updates['/users/' + self.userId() + '/favorites/' + data.title] = data;
+              firebase.database().ref().update(updates);
+              self.alert(data.title + " added to your favorites");
+            }
+            self.fade(true);
           });
+        }else{
+          $("#log-in-modal").modal('show');
+        }
+      });
+    }
 
-          $el.slider(options);
-      },
-      update: function (element, valueAccessor) {
-          var $el = $(element);
-          var value = ko.unwrap(valueAccessor());
-          $el.slider("values", value);
-      }
-    };
-
-    // Display range selected for filtering
-    self.rateRange = ko.computed(function() {
-        return self.values()[0] + " - " + self.values()[1] ;
-    }, self);
-
-    // Add favorite lat-lng to database if user is logged in
-    $(document).on('click', '#favorites', function(){
-      if(self.userId() !== undefined){
-        var favPos = $("#favorites").data("link");
-        var title = $("#favorites").data("title");
-        // Get the latitude
-        var lat = favPos.substring(favPos.lastIndexOf("(")+1,favPos.lastIndexOf(","));
-
-        // Get the longitude
-        var lng = favPos.substring(favPos.lastIndexOf(",")+2,favPos.lastIndexOf(")"));
-
-        // Get a reference to the database service
-        var data = {
-          title: title,
-          lat: lat,
-          lng: lng
-        };
-
-        var updates = {};
-
-        // listen to firebase data on click
-        firebase.database().ref().child('/users/' + self.userId() + '/favorites/').once('value', function(snap){
-          // remove data if it exists in the database
-          if(snap.hasChild(data.title)) {
-            updates = {};
-            updates['/users/' + self.userId() + '/favorites/' + data.title] = null;
-            firebase.database().ref().update(updates);
-            self.alert(data.title + " removed from your favorites");
-          }else{
-            // add data to database if it doesn't already exist
-            updates = {};
-            updates['/users/' + self.userId() + '/favorites/' + data.title] = data;
-            firebase.database().ref().update(updates);
-            self.alert(data.title + " added to your favorites");
-          }
-          self.fade(true);
-        });
-      }else{
-        $("#log-in-modal").modal('show');
-      }
-    });
-  }
-
-  // Apply binding to element with id togglemenu
-  ko.applyBindings(new LocationsViewModel(), document.getElementById("togglemenu"));
+    // Apply binding to element with id togglemenu
+    ko.applyBindings(new LocationsViewModel(), document.getElementById("togglemenu"));
 
 
-  /**
-   * This function is our alert viewmodel
-   */
-  function AlertModel(){
-    var self = this;
-    self.alert = ko.observable().subscribeTo("Alert");
-    self.fade = ko.observable(false).syncWith("Fade");
-    self.toggleFade = function(){
-        self.fade(!self.fade());
-    };
-  }
+    /**
+     * This function is our alert viewmodel
+     */
+    function AlertModel(){
+      var self = this;
+      self.alert = ko.observable().subscribeTo("Alert");
+      self.fade = ko.observable(false).syncWith("Fade");
+      self.toggleFade = function(){
+          self.fade(!self.fade());
+      };
+    }
 
-  // Apply binding to element with id alert
-  ko.applyBindings(new AlertModel(), document.getElementById('alert'));
+    // Apply binding to element with id alert
+    ko.applyBindings(new AlertModel(), document.getElementById('alert'));
 
-  // Display default markers on map on page load
-  showListings(markers);
+    // Display default markers on map on page load
+    showListings(markers);
 
-  // Hide toggle menu on page load
-  $("#togglemenu").hide();
+    // Hide toggle menu on page load
+    $("#togglemenu").hide();
 
-  /**
-   *
-   * Effects for links on info window
-   *
-   */
+    /**
+     *
+     * Effects for links on info window
+     *
+     */
 
-  // Used to toggle the menu-panel
-  var isClosed = false;
+    // Used to toggle the menu-panel
+    var isClosed = false;
 
-  // Used to toggle the photo panel
-  var isClosedPhoto = false;
+    // Used to toggle the photo panel
+    var isClosedPhoto = false;
 
-  // Menu bar effects
-  $(".menu-bar").click(function(){
+    // Menu bar effects
+    $(".menu-bar").click(function(){
       if(!isOpenMenu){
         $("#menu-panel").css("visibility", "hidden");
         $("#photo-panel").css({"visibility": "hidden", "width": 0});
         $("#close-photo-panel").css({"visibility": "hidden", "width": 0});
         $("#left-panel").css({"visibility": "hidden"});
         $("#title").text("Foodster");
+        $(".options-box").css({"visibility": "visible"});
         $(".head-box").animate({
           width: 340
         }, 500);
@@ -522,153 +394,153 @@ function initMap() {
         $("#title").text("");
         isOpenMenu = false;
       }
-  });
+    });
 
-  // Get tips
-  $(document).on('click', '#get-tips', function(){
-    closeMenu(true);
-    $("#menu-panel").css("visibility", "hidden");
-    $("#photo-panel").css({"visibility": "hidden", "width": 0});
-    $("#close-photo-panel").css({"visibility": "hidden", "width": 0});
-    $("#left-panel").css('z-index', 300);
-    $("#left-panel").css({"opacity":0.0, "visibility": "visible"}).animate({
-      opacity: 1
-    }, {duration: 500, queue: false});
-    $("#left-panel").animate({
-      height: '80%'
-    }, {duration: 500, queue: false});
-    loadTips();
-  });
-
-  // Get more information
-  $(document).on('click', '#marker-more', function(){
-    closeMenu(true);
-    $("#photo-panel").css({"visibility": "hidden", "width": 0});
-    $("#close-photo-panel").css({"visibility": "hidden", "width": 0});
-    $("#left-panel").css({"visibility": "hidden"});
-    $("#menu-panel").css({"top": "0px", "overflow-y": "auto", 'z-index': 100, "visibility": "visible"});
-    $("#menu-panel").animate({
-      height: '80%'
-    }, 500);
-    isClosed = false;
-    loadData();
-  });
-
-  // Get Directions
-  $(document).on('click', '#get-directions', function(){
-    closeMenu(true);
-    var $getDirections = $('#get-directions');
-    var origin = $getDirections.data('origin');
-    var destination = $getDirections.data('destination');
-    $("#menu-panel").css("visibility", "hidden");
-    $("#photo-panel").css({"visibility": "hidden", "width": 0});
-    $("#close-photo-panel").css({"visibility": "hidden", "width": 0});
-    $("#left-panel").css({"visibility": "hidden"});
-    displayDirections(markers[origin].getPosition(), placeMarkers[destination].getPosition());
-  });
-
-  // Get nearby places
-  $(document).on('click', '#get-places', function(){
-    closeMenu(true);
-    $("#menu-panel").css("visibility", "hidden");
-    $("#photo-panel").css({"visibility": "hidden", "width": 0});
-    $("#close-photo-panel").css({"visibility": "hidden", "width": 0});
-    $("#left-panel").css({"visibility": "hidden"});
-    nearbySearchPlaces();
-  });
-
-  // Get images
-  $(document).on('click', '#get-images', function(){
-    closeMenu(true);
-    $("#left-panel").css({"visibility": "hidden"});
-    $("#menu-panel").css("visibility", "hidden");
-    $('#close-photo-panel').css({"visibility": "visible", 'right': 0, 'width': 0});
-    $('#close-photo-panel h1 span').removeClass("glyphicon-chevron-left");
-    $('#close-photo-panel h1 span').addClass("glyphicon-chevron-right");
-    $("#photo-panel").css({"width": 0, "visibility": "visible"});
-    $("#photo-panel").animate({
-      width: '220px'
-    }, {duration: 500, queue: false});
-    $('#close-photo-panel').animate({
-      width: '40px',
-      right: '220px'
-    }, {duration: 500, queue: false});
-    isClosedPhoto = false;
-    $("#modalImages .modal-body").empty();
-    loadImages();
-  });
-
-  // Close the photo-panel
-  $('#close-photo-panel').click(function(){
-    if(!isClosedPhoto){
-      $('#photo-panel').css('overflow', 'hidden');
-      $("#photo-panel").animate({
-        width: 0
+    // Get tips
+    $(document).on('click', '#get-tips', function(){
+      closeMenu(true);
+      $("#menu-panel").css("visibility", "hidden");
+      $("#photo-panel").css({"visibility": "hidden", "width": 0});
+      $("#close-photo-panel").css({"visibility": "hidden", "width": 0});
+      $("#left-panel").css('z-index', 300);
+      $("#left-panel").css({"opacity":0.0, "visibility": "visible"}).animate({
+        opacity: 1
       }, {duration: 500, queue: false});
-      $(this).animate({
-        right: 0
+      $("#left-panel").animate({
+        height: '80%'
       }, {duration: 500, queue: false});
-      $('#close-photo-panel h1 span').removeClass("glyphicon-chevron-right");
-      $('#close-photo-panel h1 span').addClass("glyphicon-chevron-left");
-      isClosedPhoto = true;
-    }else{
-      $('#photo-panel').css('overflow', 'auto');
-      $('#close-photo-panel h1 span').removeClass('glyphicon-chevron-left');
-      $('#close-photo-panel h1 span').addClass('glyphicon-chevron-right');
-      $("#photo-panel").css("visibility", "visible");
-      $(this).animate({
-        right: '220px'
-      }, {duration: 500, queue: false});
+      loadTips();
+    });
+
+    // Get more information
+    $(document).on('click', '#marker-more', function(){
+      closeMenu(true);
+      $("#photo-panel").css({"visibility": "hidden", "width": 0});
+      $("#close-photo-panel").css({"visibility": "hidden", "width": 0});
+      $("#left-panel").css({"visibility": "hidden"});
+      $("#menu-panel").css({"top": "0px", "overflow-y": "auto", 'z-index': 100, "visibility": "visible"});
+      $("#menu-panel").animate({
+        height: '80%'
+      }, 500);
+      isClosed = false;
+      loadData();
+    });
+
+    // Get Directions
+    $(document).on('click', '#get-directions', function(){
+      closeMenu(true);
+      var $getDirections = $('#get-directions');
+      var origin = $getDirections.data('origin');
+      var destination = $getDirections.data('destination');
+      $("#menu-panel").css("visibility", "hidden");
+      $("#photo-panel").css({"visibility": "hidden", "width": 0});
+      $("#close-photo-panel").css({"visibility": "hidden", "width": 0});
+      $("#left-panel").css({"visibility": "hidden"});
+      displayDirections(markers[origin].getPosition(), placeMarkers[destination].getPosition());
+    });
+
+    // Get nearby places
+    $(document).on('click', '#get-places', function(){
+      closeMenu(true);
+      $("#menu-panel").css("visibility", "hidden");
+      $("#photo-panel").css({"visibility": "hidden", "width": 0});
+      $("#close-photo-panel").css({"visibility": "hidden", "width": 0});
+      $("#left-panel").css({"visibility": "hidden"});
+      nearbySearchPlaces();
+    });
+
+    // Get images
+    $(document).on('click', '#get-images', function(){
+      closeMenu(true);
+      $("#left-panel").css({"visibility": "hidden"});
+      $("#menu-panel").css("visibility", "hidden");
+      $('#close-photo-panel').css({"visibility": "visible", 'right': 0, 'width': 0});
+      $('#close-photo-panel h1 span').removeClass("glyphicon-chevron-left");
+      $('#close-photo-panel h1 span').addClass("glyphicon-chevron-right");
+      $("#photo-panel").css({"width": 0, "visibility": "visible"});
       $("#photo-panel").animate({
         width: '220px'
       }, {duration: 500, queue: false});
+      $('#close-photo-panel').animate({
+        width: '40px',
+        right: '220px'
+      }, {duration: 500, queue: false});
       isClosedPhoto = false;
-    }
-  });
+      loadImages();
+    });
 
-  // Reduce the panel showing information about the place
-  $(document).on('click', '#venue-detail-menu', function(){
-    if(!isClosed){
-      $("#menu-panel").css({"top": "-50px", "overflow-y": "hidden"});
-      $("#menu-panel").animate({
+    // Close the photo-panel
+    $('#close-photo-panel').click(function(){
+      if(!isClosedPhoto){
+        $('#photo-panel').css('overflow', 'hidden');
+        $("#photo-panel").animate({
+          width: 0
+        }, {duration: 500, queue: false});
+        $(this).animate({
+          right: 0
+        }, {duration: 500, queue: false});
+        $('#close-photo-panel h1 span').removeClass("glyphicon-chevron-right");
+        $('#close-photo-panel h1 span').addClass("glyphicon-chevron-left");
+        isClosedPhoto = true;
+      }else{
+        $('#photo-panel').css('overflow', 'auto');
+        $('#close-photo-panel h1 span').removeClass('glyphicon-chevron-left');
+        $('#close-photo-panel h1 span').addClass('glyphicon-chevron-right');
+        $("#photo-panel").css("visibility", "visible");
+        $(this).animate({
+          right: '220px'
+        }, {duration: 500, queue: false});
+        $("#photo-panel").animate({
+          width: '220px'
+        }, {duration: 500, queue: false});
+        isClosedPhoto = false;
+      }
+    });
+
+    // Reduce the panel showing information about the place
+    $(document).on('click', '#venue-detail-menu', function(){
+      if(!isClosed){
+        $("#menu-panel").css({"top": "-50px", "overflow-y": "hidden"});
+        $("#menu-panel").animate({
+          height: 0
+        }, 500);
+        $(this).removeClass('glyphicon-chevron-up');
+        $(this).addClass('glyphicon-chevron-down');
+        isClosed = true;
+      }else{
+        $("#menu-panel").css({"top": "0px", "overflow-y": "auto"});
+        $(this).removeClass('glyphicon-chevron-down');
+        $(this).addClass('glyphicon-chevron-up');
+        $("#menu-panel").animate({
+          height: '70%'
+        }, 500);
+        isClosed = false;
+      }
+    });
+
+
+    $("#left-panel").click(function(){
+      $("#left-panel").css('z-index', 300);
+    });
+
+    // Close the panel showing tips for the place
+    $("#close-reviews").click(function(){
+      $("#left-panel").css('z-index', 100);
+      $("#left-panel").animate({
         height: 0
-      }, 500);
-      $(this).removeClass('glyphicon-chevron-up');
-      $(this).addClass('glyphicon-chevron-down');
-      isClosed = true;
-    }else{
-      $("#menu-panel").css({"top": "0px", "overflow-y": "auto"});
-      $(this).removeClass('glyphicon-chevron-down');
-      $(this).addClass('glyphicon-chevron-up');
-      $("#menu-panel").animate({
-        height: '70%'
-      }, 500);
-      isClosed = false;
-    }
-  });
+      }, {duration: 500, queue: false});
+      $("#left-panel").css({opacity: 1.0, visibility: "visible"}).animate({
+        opacity: 0
+      }, {duration: 500, queue: false});
+    });
 
-
-  $("#left-panel").click(function(){
-    $("#left-panel").css('z-index', 300);
-  });
-
-  // Close the panel showing tips for the place
-  $("#close-reviews").click(function(){
-    $("#left-panel").css('z-index', 100);
-    $("#left-panel").animate({
-      height: 0
-    }, {duration: 500, queue: false});
-    $("#left-panel").css({opacity: 1.0, visibility: "visible"}).animate({
-      opacity: 0
-    }, {duration: 500, queue: false});
-  });
-
-  // Close the directions info window
-  $("#close-directions").click(function(){
-    $("#right-panel-menu").css("width", "0");
-    document.getElementById('right-panel-menu').style.visibility = "hidden";
-    directionsDisplay.setMap(null);
-  });
+    // Close the directions info window
+    $("#close-directions").click(function(){
+      $("#right-panel-menu").css("width", "0");
+      document.getElementById('right-panel-menu').style.visibility = "hidden";
+      directionsDisplay.setMap(null);
+    });
+  }
 }
 
 /**
@@ -687,6 +559,13 @@ function closeMenu(openI){
     $("#title").text("");
     isOpenMenu = false;
   }
+}
+
+/**
+ * Function called when there is an error in map loading
+ */
+function mapError(){
+  window.alert("Google Maps has failed to load. Please check your internet connection and try again.");
 }
 
 /**

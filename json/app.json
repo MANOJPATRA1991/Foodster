@@ -1,0 +1,197 @@
+[
+   [
+      {
+         "featureType": "water",
+         "stylers": [
+            {
+               "color": "#19a0d8"
+            }
+         ]
+      },
+      {
+         "featureType": "administrative",
+         "elementType": "labels.text.stroke",
+         "stylers": [
+            {
+               "color": "#ffffff"
+            },
+            {
+               "weight": 6
+            }
+         ]
+      },
+      {
+         "featureType": "administrative",
+         "elementType": "labels.text.fill",
+         "stylers": [
+            {
+               "color": "#e85113"
+            }
+         ]
+      },
+      {
+         "featureType": "road.highway",
+         "elementType": "geometry.stroke",
+         "stylers": [
+            {
+               "color": "#efe9e4"
+            },
+            {
+               "lightness": -40
+            }
+         ]
+      },
+      {
+         "featureType": "transit.station",
+         "stylers": [
+            {
+               "weight": 9
+            },
+            {
+               "hue": "#e85113"
+            }
+         ]
+      },
+      {
+         "featureType": "road.highway",
+         "elementType": "labels.icon",
+         "stylers": [
+            {
+               "visibility": "off"
+            }
+         ]
+      },
+      {
+         "featureType": "water",
+         "elementType": "labels.text.stroke",
+         "stylers": [
+            {
+               "lightness": 100
+            }
+         ]
+      },
+      {
+         "featureType": "water",
+         "elementType": "labels.text.fill",
+         "stylers": [
+            {
+               "lightness": -100
+            }
+         ]
+      },
+      {
+         "featureType": "poi",
+         "elementType": "geometry",
+         "stylers": [
+            {
+               "visibility": "on"
+            },
+            {
+               "color": "#f0e4d3"
+            }
+         ]
+      },
+      {
+         "featureType": "road.highway",
+         "elementType": "geometry.fill",
+         "stylers": [
+            {
+               "color": "#efe9e4"
+            },
+            {
+               "lightness": -25
+            }
+         ]
+      }
+   ],
+   [
+      {
+         "title": "Toscano",
+         "location": {
+            "lat": 12.937074,
+            "lng": 77.58526
+         },
+         "rating": 8.2
+      },
+      {
+         "title": "McDonald's Family Restaurant",
+         "location": {
+            "lat": 12.975948,
+            "lng": 77.598335
+         },
+         "rating": 5.5
+      },
+      {
+         "title": "Hotel Shalimar Bar and Restaurant",
+         "location": {
+            "lat": 12.978237,
+            "lng": 77.63729
+         },
+         "rating": 7.5
+      },
+      {
+         "title": "J W Kitchen",
+         "location": {
+            "lat": 12.972084,
+            "lng": 77.59491
+         },
+         "rating": 9
+      },
+      {
+         "title": "Smoke House Deli",
+         "location": {
+            "lat": 12.971678,
+            "lng": 77.5983
+         },
+         "rating": 8.8
+      },
+      {
+         "title": "Peace Restaurant",
+         "location": {
+            "lat": 12.961817,
+            "lng": 77.59797
+         },
+         "rating": 1
+      },
+      {
+         "title": "Sunny's'",
+         "location": {
+            "lat": 12.972028,
+            "lng": 77.5985
+         },
+         "rating": 8.3
+      },
+      {
+         "title": "Airlines Hotel",
+         "location": {
+            "lat": 12.973049,
+            "lng": 77.6
+         },
+         "rating": 8.7
+      },
+      {
+         "title": "Truffles - Ice & Spice",
+         "location": {
+            "lat": 12.971557,
+            "lng": 77.60107
+         },
+         "rating": 9.2
+      },
+      {
+         "title": "Harima",
+         "location": {
+            "lat": 12.967413,
+            "lng": 77.60042
+         },
+         "rating": 9.1
+      },
+      {
+         "title": "Imperial Restaurant",
+         "location": {
+            "lat": 12.982122,
+            "lng": 77.60318
+         },
+         "rating": 5.7
+      }
+   ]
+]

@@ -73,6 +73,7 @@ hr {
 }
 
 .options-box {
+  visibility: hidden;
   position: absolute;
   z-index: 500;
   background: #fff;
@@ -456,6 +457,7 @@ img#photo-img {
 }
 
 .modal-heading {
+  text-align: center;
   padding: 8px;
   margin: 10px;
 }
@@ -510,10 +512,45 @@ img#photo-img {
   color: red;
 }
 
-#close-places {
-  color: red;
-}
-
 .search {
   margin-bottom: 0;
+}
+
+#max-rating {
+  float: right;
+}
+
+#close-directions {
+  float: right;
+}
+
+#main-icon {
+  float:left;
+  margin-right: 4px;
+}
+
+#main-heading {
+  margin-bottom: 0;
+  padding-right: 20px;
+}
+
+.rating-label {
+  margin-right: 10px;
+}
+
+.rating-signal {
+  font-size: 12px;
+}
+
+#close-reviews {
+  float: right;
+}
+
+.user {
+  width: 100px;
+}
+
+#remove-places {
+  float: right;
+  color: red;
 }

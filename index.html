@@ -4,7 +4,7 @@
     <title>Foodster</title>
     <meta name="viewport" content="initial-scale=1.0">
     <meta charset="utf-8">
-      <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
     <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
     <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lobster">
@@ -13,55 +13,61 @@
   </head>
   <body>
     <div class="container-fluid">
-      <div class="head-box">
-        <div class="clearfix">
-          <h1><span id="title"></span>
-            <div class="menu-bar">
-              <div class="bar1"></div>
-              <div class="bar2"></div>
-              <div class="bar3"></div>
-            </div>
-          </h1>
+      <aside>
+        <div class="head-box">
+          <div class="clearfix">
+            <h1><span id="title"></span>
+              <div class="menu-bar">
+                <div class="bar1"></div>
+                <div class="bar2"></div>
+                <div class="bar3"></div>
+              </div>
+            </h1>
+          </div>
         </div>
-      </div>
-      <div id="togglemenu" class="options-box">
-        <div>
-          <button data-bind="visible: !isLoggedIn()" id="sign-up" class="opt-buttons btn btn-primary" data-toggle="modal" data-target="#sign-up-modal" type="button"><span class="glyphicon glyphicon-user"></span> Sign up</button>
-          <button data-bind="visible: !isLoggedIn()" id="log-in" class="opt-buttons btn btn-primary" data-toggle="modal" data-target="#log-in-modal" type="button"><span class="glyphicon glyphicon-log-in"></span> Log in</button>
-          <button data-bind="visible: isLoggedIn()" id="log-out" type="button" class="btn btn-primary" data-bind="click: signOut" data-toggle="modal" data-target="#log-in-modal" type="button"><span class="glyphicon glyphicon-log-out"></span> Log out</button>
-          <div data-bind="visible: isLoggedIn">
-            <h4>Hello <span id="username" data-bind="text: userName"></span></h4>
-            <button data-bind="{visible: isLoggedIn()}" class="btn btn-primary" data-toggle="modal" data-target="#my-places-modal" type="button"> My Places </button>
-            <button data-bind="{click: showFavPlaces, visible: isLoggedIn() && favLocations().length !== 0}" type="button" class="btn btn-primary"> See on map </button>
-          </div>
-          <hr>
-          <button id="show-listings" data-bind="click: showList" class="opt-buttons btn btn-primary" type="button"><span class="glyphicon glyphicon-map-marker"></span> Show Listings</button>
-          <button id="hide-listings" data-bind="click: hideList" class="opt-buttons btn btn-primary" type="button"><span class="glyphicon glyphicon-map-marker"></span> Hide Listings</button>
-          <hr>
-          <button class="opt-buttons btn btn-primary" id="filter" type="button" data-bind="click: activateSearchByRating">Filter by rating</button>
-          <button class="opt-buttons btn btn-primary" id="reset" type="button" data-bind="click: clearValue">Reset Filters</button>
-          <br>
-          <!-- slider to filter based on rating -->
-          <div data-bind="visible: searchByRating">
-            <span>1</span><span style="float: right;">10</span><div class="clearfix" data-bind="slider: values, sliderOptions: {min: 1, max: 10, step: 1}"></div>
-          </div>
-          <br>
-          <form class="form-horizontal">
-            <div class="search form-group">
-              <div class="col-xs-12">
-                <input type="text" class="form-control" placeholder="Search from list" data-bind="value: query, valueUpdate: 'keyup'" autocomplete="off">
-              </div><br><br>
+
+        <div id="togglemenu" class="options-box">
+          <div>
+            <button data-bind="visible: !isLoggedIn()" id="sign-up" class="opt-buttons btn btn-primary" data-toggle="modal" data-target="#sign-up-modal" type="button"><span class="glyphicon glyphicon-user"></span> Sign up</button>
+            <button data-bind="visible: !isLoggedIn()" id="log-in" class="opt-buttons btn btn-primary" data-toggle="modal" data-target="#log-in-modal" type="button"><span class="glyphicon glyphicon-log-in"></span> Log in</button>
+            <button data-bind="visible: isLoggedIn()" id="log-out" type="button" class="btn btn-primary" data-bind="click: signOut" data-toggle="modal" data-target="#log-in-modal" type="button"><span class="glyphicon glyphicon-log-out"></span> Log out</button>
+            <div data-bind="visible: isLoggedIn">
+              <h4>Hello <span id="username" data-bind="text: userName"></span></h4>
+              <button data-bind="{visible: isLoggedIn()}" class="btn btn-primary" data-toggle="modal" data-target="#my-places-modal" type="button"> My Places </button>
+              <button data-bind="{click: showFavPlaces, visible: isLoggedIn() && favLocations().length !== 0}" type="button" class="btn btn-primary"> See on map </button>
             </div>
-          </form>
+            <hr>
+            <button id="show-listings" data-bind="click: showList" class="opt-buttons btn btn-primary" type="button"><span class="glyphicon glyphicon-map-marker"></span> Show Listings</button>
+            <button id="hide-listings" data-bind="click: hideList" class="opt-buttons btn btn-primary" type="button"><span class="glyphicon glyphicon-map-marker"></span> Hide Listings</button>
+            <hr>
+            <button class="opt-buttons btn btn-primary" id="filter" type="button" data-bind="click: activateSearchByRating">Filter by rating</button>
+            <button class="opt-buttons btn btn-primary" id="reset" type="button" data-bind="click: clearValue">Reset Filters</button>
+            <br>
 
-          <div data-bind="visible: searchByRating"><p>Showing results for ratings between <span data-bind="text: rateRange"></span></p></div>
+            <!-- slider to filter based on rating -->
+            <div data-bind="visible: searchByRating">
+              <span>1</span><span id="max-rating">10</span><div class="clearfix" data-bind="slider: values, sliderOptions: {min: 1, max: 10, step: 1}"></div>
+            </div>
+            <br>
 
-          <div class="list-group" data-bind="foreach: sortedLocations">
-            <li class="list-group-item  list-default" data-bind="text: title, click: $root.showMarkerSelected"></li>
+            <form class="form-horizontal">
+              <div class="search form-group">
+                <div class="col-xs-12">
+                  <input type="text" class="form-control" placeholder="Search from list" data-bind="value: query, valueUpdate: 'keyup'" autocomplete="off">
+                </div><br><br>
+              </div>
+            </form>
+
+            <div data-bind="visible: searchByRating() && sortedLocations().length !== 0"><p>Showing results for ratings between <span data-bind="text: rateRange"></span></p></div>
+            <div data-bind="visible: searchByRating() && sortedLocations().length === 0">No shows in the selected range of <span data-bind="text: rateRange"></span></div>
+            <div class="list-group" data-bind="foreach: sortedLocations">
+              <li class="list-group-item  list-default" data-bind="text: title, click: $root.showMarkerSelected"></li>
+            </div>
+            <hr>
           </div>
-          <hr>
         </div>
-      </div>
+      </aside>
+
       <div class="container-fluid">
         <div data-bind="visible: fade" id="alert">
           <div class="alert alert-info">
@@ -72,68 +78,71 @@
           <strong data-bind="text: alert"></strong>
           </div>
         </div>
-        <div id="map"></div>
+          <main id="map"></main>
       </div>
 
-      <div id="right-panel-menu">
+      <aside id="right-panel-menu">
           <div class="row">
             <div class="col-xs-12">
-              <h4>  Directions <span id="close-directions" style='float: right;' class='glyphicon glyphicon-remove'></span></h4>
+              <h4>  Directions <span id="close-directions" class='glyphicon glyphicon-remove'></span></h4>
               <div id="right-panel"></div>
             </div>
           </div>
-      </div>
-      <div id="menu-panel">
-        <span id='venue-detail-menu' class='glyphicon glyphicon-chevron-up'></span>
-        <span id='menu-panel-heading' data-bind="visible: error() !== true">
-          <div class='main-title'>
-            <img style="float:left; margin-right: 4px;" data-bind="attr: {src: icon}">
-            <h2 style='margin-bottom: 0; padding-right: 20px;' id='venue_name' data-bind="{text: name, attr: {'data-id': id}}"></h2>
-            <span data-bind="if: rating"><span class='label' style='margin-right: 10px;' data-bind="{style: {'background-color': ratingColor}, text: rating}"></span></span>
-            <span data-bind="if: ratingSignals" style='font-size: 12px;'><b><em data-bind="{text: ratingSignals}"></em></b></span>
+      </aside>
+
+      <section id="menu-panel">
+        <article>
+          <span id='venue-detail-menu' class='glyphicon glyphicon-chevron-up'></span>
+          <span id='menu-panel-heading' data-bind="visible: error() !== true">
+            <div class='main-title'>
+              <img id="main-icon" data-bind="attr: {src: icon}">
+              <h2 id="main-heading" id='venue_name' data-bind="{text: name, attr: {'data-id': id}}"></h2>
+              <span data-bind="if: rating"><span class='rating-label label' data-bind="{style: {'background-color': ratingColor}, text: rating}"></span></span>
+              <span data-bind="if: ratingSignals" class="rating-signal"><b><em data-bind="{text: ratingSignals}"></em></b></span>
+            </div>
+            <div class='clearfix'></div>
+          </span>
+          <div id="four-square" data-bind="visible: error() !== true">
+            <p data-bind="visible: url" class='venue-p'><span class='icon glyphicon glyphicon-globe'></span>&nbsp;<a data-bind="{ attr: {href: url}, text: url}"></a></p>
+            <p data-bind="visible: category" class='venue-p'><span class='icon glyphicon glyphicon-tag'></span>&nbsp;<span data-bind="{text: category}" class='label label-success'></span></p>
+            <p data-bind="visible: address" class='venue-p'><span class='icon glyphicon glyphicon-map-marker'></span>&nbsp;<span data-bind="text: address"></span></p>
+            <p data-bind="visible: phone" class='venue-p'><span class='icon glyphicon glyphicon-phone'></span>&nbsp;<span data-bind="text: phone"></span></p>
+            <p data-bind="visible: facebook_name" class='venue-p'><span class='icon'><i class='fa fa-facebook' aria-hidden='true'></i></span>&nbsp;&nbsp;<a data-bind="{attr: {href: facebook}, text: facebook_name}"></a></p>
+            <p data-bind="visible: twitter_name" class='venue-p'><span class='icon'><i class='fa fa-twitter' aria-hidden='true'></i></span>&nbsp;<a data-bind="{text: twitter_name, attr: {href: twitter}}"></a></p>
+            <ul class='list-group'>
+              <li data-bind="visible: checkins" class='venue-p list-group-item'>
+                <span class='badge' data-bind="text: checkins"></span> Checkins
+              </li>
+              <li data-bind="visible: users" class='venue-p list-group-item'>
+                <span class='badge' data-bind="text: users"></span> Users
+              </li>
+              <li data-bind="visible: visits" class='venue-p list-group-item'>
+                <span class='badge' data-bind="text: visits"></span> Visits
+              </li>
+            </ul>
+            <p data-bind="visible: status" class='venue-p'>
+              <span class='icon glyphicon glyphicon-time'></span> <span data-bind="text: status"></span> (<a id='show-more' data-bind="click: toggleTime" href='#'>show more</a>)
+            </p>
+            <div data-bind="visible: timeVisible">
+              <p id='time' data-bind="text: time() ? time : 'No info available'"> </p>
+            </div>
+            <p class='venue-p' data-bind="{style: {color: isOpen() ? 'green' : 'red'}}"><b data-bind="{ text: isOpen() ? 'Open now' : 'Closed'}"></b></p>
           </div>
-          <div class='clearfix'></div>
-        </span>
-        <div id="four-square" data-bind="visible: error() !== true">
-          <p data-bind="visible: url" class='venue-p'><span class='icon glyphicon glyphicon-globe'></span>&nbsp;<a data-bind="{ attr: {href: url}, text: url}"></a></p>
-          <p data-bind="visible: category" class='venue-p'><span class='icon glyphicon glyphicon-tag'></span>&nbsp;<span data-bind="{text: category}" class='label label-success'></span></p>
-          <p data-bind="visible: address" class='venue-p'><span class='icon glyphicon glyphicon-map-marker'></span>&nbsp;<span data-bind="text: address"></span></p>
-          <p data-bind="visible: phone" class='venue-p'><span class='icon glyphicon glyphicon-phone'></span>&nbsp;<span data-bind="text: phone"></span></p>
-          <p data-bind="visible: facebook_name" class='venue-p'><span class='icon'><i class='fa fa-facebook' aria-hidden='true'></i></span>&nbsp;&nbsp;<a data-bind="{attr: {href: facebook}, text: facebook_name}"></a></p>
-          <p data-bind="visible: twitter_name" class='venue-p'><span class='icon'><i class='fa fa-twitter' aria-hidden='true'></i></span>&nbsp;<a data-bind="{text: twitter_name, attr: {href: twitter}}"></a></p>
-          <ul class='list-group'>
-            <li data-bind="visible: checkins" class='venue-p list-group-item'>
-              <span class='badge' data-bind="text: checkins"></span> Checkins
-            </li>
-            <li data-bind="visible: users" class='venue-p list-group-item'>
-              <span class='badge' data-bind="text: users"></span> Users
-            </li>
-            <li data-bind="visible: visits" class='venue-p list-group-item'>
-              <span class='badge' data-bind="text: visits"></span> Visits
-            </li>
-          </ul>
-          <p data-bind="visible: status" class='venue-p'>
-            <span class='icon glyphicon glyphicon-time'></span> <span data-bind="text: status"></span> (<a id='show-more' data-bind="click: toggleTime" href='#'>show more</a>)
-          </p>
-          <div data-bind="visible: timeVisible">
-            <p id='time' data-bind="text: time() ? time : 'No info available'"> </p>
+          <div id="message" data-bind="visible: error">
+            <p data-bind="text: message"></p>
           </div>
-          <p class='venue-p' data-bind="{style: {color: isOpen() ? 'green' : 'red'}}"><b data-bind="{ text: isOpen() ? 'Open now' : 'Closed'}"></b></p>
-        </div>
-        <div id="message" data-bind="visible: error">
-          <p data-bind="text: message"></p>
-        </div>
-      </div>
+        </article>
+      </section>
 
       <div id="close-photo-panel">
         <h1><span class="glyphicon glyphicon-chevron-right"></span></h1>
       </div>
 
       <!-- Photo panel -->
-      <div id="photo-panel">
+      <aside id="photo-panel">
         <div id="image-square">
           <div class="image-row row" data-bind="{visible: error() !== true, foreach: images}">
-            <div class="col-xs-12">
+            <div class="col-xs-12" data-bind="click: $parent.openImageModal" data-toggle="modal" data-target="#modalImages">
               <a class="thumbnail"><img data-bind="{attr: { src: src, alt: alt}}"></a>
             </div>
           </div>
@@ -141,27 +150,33 @@
           <p data-bind="text: message"></p>
         </div>
         </div>
-      </div>
+      </aside>
 
       <!-- User Tips -->
-      <div id="left-panel">
-        <h2><span id="close-reviews" style='float: right;' class='glyphicon glyphicon-remove'></span>Users Tips</h2>
-        <hr>
-        <div id="venue-tips" data-bind="{visible: error() !== true, foreach: tips}">
-          <venue-tips-template params="value: $data"></venue-tips-template>
+      <section id="left-panel">
+        <article>
+          <h2><span id="close-reviews" class='glyphicon glyphicon-remove'></span>Users Tips</h2>
           <hr>
-        </div>
-        <div id="message" data-bind="visible: error">
-          <p data-bind="text: message"></p>
-        </div>
-      </div>
+          <div id="venue-tips" data-bind="{visible: error() !== true, foreach: tips}">
+            <venue-tips-template params="value: $data"></venue-tips-template>
+            <hr>
+          </div>
+          <div id="message" data-bind="visible: error">
+            <p data-bind="text: message"></p>
+          </div>
+        </article>
+      </section>
 
       <!-- Image modal -->
       <div id="modalImages" class="modal fade" role="dialog">
         <div class="modal-dialog">
           <div class="modal-content">
             <div class="modal-body">
-
+              <img style="width:100%;" data-bind="attr: {src: modalSrc}">
+              <div class="control-div">
+                <button class="btn btn-xs btn-success controls next" data-bind="{visible: next() !== images().length, attr: {'data-index': next}, click: changeNext}">next <span class="glyphicon glyphicon-chevron-right"></span></button>
+                <button class="btn btn-xs btn-success controls prev" data-bind="{visible: prev() >= 0, attr: {'data-index': prev}, click: changePrev}">prev <span class="glyphicon glyphicon-chevron-left"></span></button>
+              </div>
             </div>
           </div>
         </div>
@@ -169,15 +184,15 @@
     </div>
 
     <!-- Footer -->
-    <div id="floating-panel">
+    <footer id="floating-panel">
       <p>Powered by&nbsp;&nbsp;&nbsp;&nbsp;<img src="assets/foursquare-icon.png"> Four Square &nbsp;&nbsp;<img src="assets/Google-Maps-icon.png"> Google Maps</p>
-    </div>
+    </footer>
 
     <!-- Venue template -->
     <template id="venue-template">
       <div class="media" data-bind="if: review">
         <div class="media-left">
-          <img data-bind="attr: {src: src}" class="media-object" style="width:100px">
+          <img data-bind="attr: {src: src}" class="user media-object">
         </div>
         <div class="media-body">
           <h4 class="media-heading"><b data-bind="text: fullName"></b></h4>
@@ -191,7 +206,7 @@
       <div class="dialog modal-dialog">
         <div class="modal-content">
           <div class="modal-heading">
-            <h2 style="text-align: center;"> Sign up </h2>
+            <h2> Sign up </h2>
           </div>
           <div class="modal-body">
             <div class="sign-error">
@@ -229,8 +244,8 @@
       <div class="dialog modal-dialog">
         <div class="modal-content">
           <div class="modal-heading">
-            <h2 data-bind="visible: !isLoggedIn()" style="text-align: center;"> Log In </h2>
-            <h2 data-bind="visible: isLoggedIn()" style="text-align: center;"> Continue to Log out </h2>
+            <h2 data-bind="visible: !isLoggedIn()"> Log In </h2>
+            <h2 data-bind="visible: isLoggedIn()"> Continue to Log out </h2>
           </div>
           <div class="modal-body">
             <div class="sign-error">
@@ -272,7 +287,7 @@
               <p>No Favorites in your bucket list. Add some.</p>
             </div>
             <div class="list-group" data-bind="{visible: !noFavs(), foreach: favLocations}">
-              <li class="list-group-item  list-default"><span data-bind="text: title"></span><span data-bind="click: closePlaces" id="close-places" style='float: right;' class='glyphicon glyphicon-remove'></span></li>
+              <li class="list-group-item  list-default"><span data-bind="text: title"></span><span data-bind="click: removePlaces" id="remove-places" class='glyphicon glyphicon-remove'></span></li>
             </div>
           </div>
         </div>
@@ -283,14 +298,11 @@
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/knockout/3.4.2/knockout-min.js"></script>
-    <!-- asynchronous loading of Javascript definitions as page renders -->
-    <script src="https://maps.googleapis.com/maps/api/js?libraries=places,drawing,geometry&key=AIzaSyAcaVpREgWnMTA-igakVPqULY4DMjjHH-I&v=3&callback=initMap"
-    async defer></script>
-    <script type="text/javascript" src="bower_components/knockout-postbox/build/knockout-postbox.min.js"></script>
-    <script type="text/javascript" src="scripts/models.js"></script>
-    <script type="text/javascript" src="scripts/foursquare.js"></script>
-    <script type="text/javascript" src="scripts/venue-tips.js"></script>
-    <script type="text/javascript" src="scripts/app.js"></script>
+    <script src="bower_components/knockout-postbox/build/knockout-postbox.min.js"></script>
+    <script src="scripts/models.js"></script>
+    <script src="scripts/foursquare.js"></script>
+    <script src="scripts/venue-tips.js"></script>
+    <script src="scripts/app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/4.3.0/firebase.js"></script>
     <script>
       // Initialize Firebase
@@ -304,5 +316,8 @@
       };
       firebase.initializeApp(config);
     </script>
+    <!-- asynchronous loading of Javascript definitions as page renders -->
+    <script src="https://maps.googleapis.com/maps/api/js?libraries=places,drawing,geometry&key=AIzaSyAcaVpREgWnMTA-igakVPqULY4DMjjHH-I&v=3&callback=initMap"
+    async defer onerror="mapError()"></script>
   </body>
 </html>

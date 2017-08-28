@@ -161,70 +161,11 @@ function returnVenueImage(data){
       obj.alt = "Image-" + i;
       venueImagesInstance.images.push(obj);
     });
-    $('.col-xs-12 .thumbnail img').click(function(){
-      var index = $(this).parents('.col-xs-12').index();
-      var src = $(this).attr('src');
-      src = src.replace('171x180', '960x720');
-      // Create modal body dynamically on each click on the images
-      modalHTML = '<img style="width:100%;" src="' + src + '">';
-      modalHTML += '<div class="control-div">';
-      modalHTML += '<button class="btn btn-xs btn-success controls next" data-index="'+
-                    (index+2) + '">next <span class="glyphicon glyphicon-chevron-right"></span></button>';
-      modalHTML += '<button class="btn btn-xs btn-success controls prev" data-index="'+
-                    (index) + '"><span class="glyphicon glyphicon-chevron-left"></span> prev</button>';
-      modalHTML += '</div>';
-      $('#modalImages').modal();
-      $('#modalImages').on('shown.bs.modal', function(){
-          $('#modalImages .modal-body').html(modalHTML);
-          $('button.controls').trigger('click');
-      });
-      $('#modalImages').on('hidden.bs.modal', function(){
-          $('#modalImages .modal-body').html("");
-      });
-    });
   }else{
     venueImagesInstance.error(true);
     venueImagesInstance.message("No images found.");
   }
 }
-
-
-// On click event for prev and next buttons of the image modal
-$(document).on('click', 'button.controls', function(){
-  var index = $(this).data('index');
-  var src = $('.image-row .col-xs-12:nth-child('+ index +') .thumbnail img').attr('src');
-  if(src){
-    src = src.replace('171x180', '960x720');
-  }
-  $('.modal-body img').attr('src', src);
-  $('.modal-body img').fadeOut('fast', function () {
-    $(this).fadeIn('slow');
-  });
-  var newPrevIndex = parseInt(index) - 1;
-  var newNextIndex = parseInt(newPrevIndex) + 2;
-
-  if($(this).hasClass('prev')){
-      $(this).data('index', newPrevIndex);
-      $('button.next').data('index', newNextIndex);
-  }else{
-      $(this).data('index', newNextIndex);
-      $('button.prev').data('index', newPrevIndex);
-  }
-  var total = $(document).find('.image-row .col-xs-12').length + 1;
-
-  //hide next button
-  if(newNextIndex === total){
-      $('button.next').hide();
-  }else{
-      $('button.next').show();
-  }
-  //hide previous button
-  if(newPrevIndex === 0){
-      $('button.prev').hide();
-  }else{
-      $('button.prev').show();
-  }
-});
 
 
 /**
