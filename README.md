@@ -51,6 +51,7 @@ Features implemented in this project include:
   9. [Knockout Postbox](https://github.com/rniemeyer/knockout-postbox)
   10. [Google Maps API](https://developers.google.com/maps/)
   11. [JSHint](jshint.com)
+  12. [JSONLint](https://jsonlint.com/)
   
 ### License
 
