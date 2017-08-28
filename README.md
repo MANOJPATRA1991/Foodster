@@ -1,6 +1,6 @@
 # Foodster
 
-A single-page application featuring a map of my neigborhood with additional functionality developed as part of Udacity's [Full Stack Web Developer Nanodegree Program](https://in.udacity.com/course/full-stack-web-developer-nanodegree--nd004/). The project is available live on [Feedster](https://manojpatra1991.github.io/Foodster/).
+A single-page application featuring a map of my neigborhood with additional functionality developed as part of Udacity's [Full Stack Web Developer Nanodegree Program](https://in.udacity.com/course/full-stack-web-developer-nanodegree--nd004/). 
 
 ## Table of Contents
   1. [Description](#description)
