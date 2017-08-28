@@ -25,6 +25,18 @@ Features implemented in this project include:
 ##### To run this project in local environment:
   1. Clone the repo.
   2. Run `bower install` from within the project folder in cmd to install the dependencies.
+  3. Install **simplehttpserver** with the following command to run the project locally:
+      `npm install simplehttpserver -g`
+  4. Also, check your host and port number and if they are different from **localhost** and **8000** (default), change them at respective places in **app.js** file.
+  5. Move into your project directory and run `simplehttpserver` from the command line.
+  5. Now open **http://localhost:8000/** from any web browser or simply double click on index.html to open the project in the browser.
+    > The simplehttpserver is required to load the json files.
+  6. To debug on Android: 
+      1. Connect your device via USB to your computer. 
+      2. Then enable USB Debugging on the device and run **adb start-server** from command prompt on computer. 
+      3. Now move to Chrome (if you want to use other browsers, make sure to check how to debug through their documentation) and type            **chrome://inspect** in the address bar. Then set Port and IP Address and port in Port Forwarding settings. 
+      4. Now install **simplehttpserver** by running the command `npm install simplehttpserver -g` from the command prompt. Once       installed run the command `simplehttpserver` from within the project directory in cmd which will start up the server thus, enabling us to debug on Android devices.
+      5. Now go to **http://localhost:8000/** to check the project on your android device.
 
 ### Reference
 
