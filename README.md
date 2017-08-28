@@ -4,14 +4,11 @@ This is Project no. 5 from Udacity's [Full Stack Web Developer Nanodegree Progra
 
 ## Table of Contents
 
-  1. [Screenshots](#screenshots)
-  2. [Description](#description)
-  3. [References](#references)
-  4. [License](#license)
+  1. [Description](#description)
+  2. [Reference](#reference)
+  3. [License](#license)
 
-### Screenshots
-
-### Descriptions
+### Description
 
 An interactive website to filter and search for restaurants in the city of Bengaluru. General information, user tips and images for the venue are displayed with the help of FourSquare API. The website has been tested for responsiveness across various devices.
 
@@ -26,7 +23,7 @@ Features implemented in this project include:
   7. Implementation of text based filters and rating sliding filters
   8. Show nearby places for a default marker
   
-### References
+### Reference
 
   1. [Bootstrap](http://getbootstrap.com/)
   2. [jQuery](https://jquery.com/)
