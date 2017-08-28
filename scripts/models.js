@@ -92,7 +92,7 @@ function SignUpModel(){
   self.email = ko.observable('').extend({ required: true });
   self.rePassword = ko.observable('').extend({ required: true, minLength: 8, maxLength:17});
   self.message = ko.observable();
-  self.isLoggedIn = ko.observable(false).publishOn("isLoggedIn");
+  self.isLoggedIn = ko.observable(false).syncWith("isLoggedIn");
 
   /**
    * This function is used for signing up users
@@ -153,7 +153,7 @@ function LogInModel(){
   self.password = ko.observable('');
   self.userName = ko.observable().publishOn("currentUser");
   self.userId = ko.observable().publishOn("currentUserId");
-  self.isLoggedIn = ko.observable(false).publishOn("isLoggedIn");
+  self.isLoggedIn = ko.observable(false).syncWith("isLoggedIn");
   self.message = ko.observable();
   self.favLocations = ko.observableArray().publishOn("FavArray");
   /**
@@ -194,11 +194,12 @@ function LogInModel(){
    */
   self.logOut = function(){
     firebase.auth().signOut().then(function() {
-      self.isLoggedIn(false);
-      self.userName("");
-      self.favLocations([]);
-      // when user is logged out, reload the web app
-      window.open('https://manojpatra1991.github.io/Foodster/', "_self");
+        console.log(self.isLoggedIn());
+        self.isLoggedIn(false);
+        self.userName("");
+        self.favLocations([]);
+        // when user is logged out, reload the web app
+        window.open('https://manojpatra1991.github.io/Foodster/', "_self");
     });
   };
 
