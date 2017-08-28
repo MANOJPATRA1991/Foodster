@@ -1,5 +1,5 @@
 // Create a variable for the map
-var map;
+var map = {};
 
 var isOpenMenu = false;
 
@@ -7,7 +7,7 @@ var isOpenMenu = false;
 var markers = [];
 
 // To store the direction display renderer instance
-var directionsDisplay;
+var directionsDisplay = null;
 
 // Create placeMarkers array to use in multiple functions to have control
 // over the number of places that show.
@@ -146,6 +146,31 @@ function initMap() {
   function Markers(locations){
     var self = this;
     self.markers = [];
+
+    /**
+     * Handler function for click event on a marker
+     */
+    self.clickHandler = function(){
+      this.setAnimation(google.maps.Animation.BOUNCE);
+      populateInfoWindow(this, largeInfowindow);
+      hideElems();
+    };
+
+    /**
+     * Handler function for mouseover event on a marker
+     */
+    self.mouseoverHandler = function(){
+      this.setIcon(highlightedIcon);
+    };
+
+    /**
+     * Handler function for mouseout event on a marker
+     */
+    self.mouseoutHandler = function(){
+      this.setAnimation(null);
+      this.setIcon(defaultIcon);
+    };
+
     for (var i = 0; i < locations.length; i++) {
       var position = locations[i].location;
       var title = locations[i].title;
@@ -163,23 +188,15 @@ function initMap() {
       self.markers.push(marker);
 
       // Create an onclick event to open an infowindow at each marker.
-      marker.addListener('click', function(){
-        this.setAnimation(google.maps.Animation.BOUNCE);
-        populateInfoWindow(this, largeInfowindow);
-        hideElems();
-      });
+      marker.addListener('click', self.clickHandler);
 
       // Change the color of the marker on mouseover
-      marker.addListener('mouseover', function(){
-        this.setIcon(highlightedIcon);
-      });
+      marker.addListener('mouseover', self.mouseoverHandler);
 
       // Reset the marker color to default on mouseout
-      marker.addListener('mouseout', function(){
-        this.setAnimation(null);
-        this.setIcon(defaultIcon);
-      });
+      marker.addListener('mouseout', self.mouseoutHandler);
     }
+
     return self.markers;
   }
 
@@ -846,7 +863,7 @@ function displayDirections(origin, destination){
   };
   directionsService.route(request, function(response, status){
     if(status === google.maps.DirectionsStatus.OK){
-      if(directionsDisplay != null) {
+      if(directionsDisplay !== null) {
           directionsDisplay.setMap(null);
           directionsDisplay = null;
       }
@@ -890,6 +907,21 @@ function nearbySearchPlaces(){
     maxWidth: 270
   });
 
+  /**
+   * Set content for info window of nearby places
+   */
+  var setNearInfo = function(){
+      this.setAnimation(google.maps.Animation.BOUNCE);
+      populateInfoWindow(this, nearInfo);
+      if($("#get-directions").length === 0){
+        nearInfo.setContent(nearInfo.getContent() +
+        '<div class="m-title"><button data-origin="' +
+        centeredMarker.id +
+        '" data-destination="' + placeMarkers.indexOf(this) + '" id="get-directions"' +
+        '" class="btn btn-xs btn-primary">Show Directions</button></div>');
+      }
+  };
+
   service = new google.maps.places.PlacesService(map);
   service.nearbySearch(request, function callback(results, status) {
     if (status == google.maps.places.PlacesServiceStatus.OK) {
@@ -914,19 +946,7 @@ function nearbySearchPlaces(){
         });
         placeMarkers.push(marker);
         // Create an onclick event to open an infowindow at each marker.
-        marker.addListener('click', (function(m){
-          return function(){
-            m.setAnimation(google.maps.Animation.BOUNCE);
-            populateInfoWindow(m, nearInfo);
-            if($("#get-directions").length === 0){
-              nearInfo.setContent(nearInfo.getContent() +
-              '<div class="m-title"><button data-origin="' +
-              centeredMarker.id +
-              '" data-destination="' + placeMarkers.indexOf(m) + '" id="get-directions"' +
-              '" class="btn btn-xs btn-primary">Show Directions</button></div>');
-            }
-          };
-        })(marker));
+        marker.addListener('click', setNearInfo);
         // Reset the marker color to default on mouseout
         marker.addListener('mouseout', function(){
           this.setAnimation(null);
