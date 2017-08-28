@@ -238,10 +238,13 @@ function favoritesModel(){
             };
             self.favLocations.push(location);
           });
-        }else{
-          self.noFavs(true);
         }
       });
+    }
+    if(self.favLocations().length === 0){
+        self.noFavs(true);
+    }else{
+        self.noFavs(false);
     }
   });
 
@@ -257,6 +260,11 @@ function favoritesModel(){
         firebase.database().ref().update(updates);
       }
     });
+    if(self.favLocations().length === 0){
+        self.noFavs(true);
+    }else{
+        self.noFavs(false);
+    }
   };
 }
 
