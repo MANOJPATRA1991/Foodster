@@ -62,7 +62,6 @@ function VenueImagesViewModel(){
     self.index(self.images.indexOf(this));
     var src = this.src.replace('171x180', '960x720');;
     self.src(src);
-    console.log(self.index());
   };
 }
 
@@ -82,7 +81,6 @@ ko.applyBindings(venueImagesInstance, document.getElementById("photo-panel"));
   self.images = ko.observableArray().syncWith("ImageArray");
 
   $("#modalImages").on('shown.bs.modal', function(){
-    console.log(self.modalSrc());
     self.next(self.index() + 2);
     self.next(self.index());
     var newPrevIndex = parseInt(self.next()) - 1;
@@ -257,7 +255,6 @@ function LogInViewModel(){
    */
   self.logOut = function(){
     firebase.auth().signOut().then(function() {
-        console.log(self.isLoggedIn());
         self.isLoggedIn(false);
         self.userName("");
         self.favLocations([]);
@@ -314,7 +311,6 @@ function favoritesViewModel(){
 
   self.removePlaces = function(){
     var elem = this.title;
-    console.log(elem);
     firebase.database().ref().child('/users/' + self.userId() + '/favorites/').once('value', function(snap){
       // remove data if it exists in the database
       if(snap.hasChild(elem)) {
