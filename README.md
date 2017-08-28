@@ -21,7 +21,7 @@ Features implemented in this project include:
   2. Use of Foursquare API to include information about a place
   3. Use of Goole Directions API to display directions between default marker and various nearby places
   4. Implementation of Firebase Authentication System
-  5. Enable Logged in users to add/delete places to their favorites list
+  5. Enable Logged in users to add/delete places to their favorites list (to Firebase reat-time database)
   6. List based display of default markers
   7. Implementation of text based filters and rating sliding filters
   8. Show nearby places for a default marker
