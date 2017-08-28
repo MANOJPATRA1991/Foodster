@@ -1,16 +1,11 @@
 # Foodster
 
-This is Project no. 5 from Udacity's [Full Stack Web Developer Nanodegree Program](https://in.udacity.com/course/full-stack-web-developer-nanodegree--nd004/). The project is available live on [Feedster](https://manojpatra1991.github.io/Foodster/).
+A single-page application featuring a map of my neigborhood with additional functionality developed as part of Udacity's [Full Stack Web Developer Nanodegree Program](https://in.udacity.com/course/full-stack-web-developer-nanodegree--nd004/). The project is available live on [Feedster](https://manojpatra1991.github.io/Foodster/).
 
 ## Table of Contents
-  1. [Project Statement](#project-statement)
-  2. [Description](#description)
-  3. [Reference](#reference)
-  4. [License](#license)
-
-### Project Statement
-
-You will develop a single-page application featuring a map of your neighborhood or a neighborhood you would like to visit. You will then add additional functionality to this application, including: map markers to identify popular locations or places you’d like to visit, a search function to easily discover these locations, and a listview to support simple browsing of all locations. You will then research and implement third-party APIs that provide additional information about each of these locations (such as StreetView images, Wikipedia articles, Yelp reviews, etc).
+  1. [Description](#description)
+  2. [Reference](#reference)
+  3. [License](#license)
 
 ### Description
 
