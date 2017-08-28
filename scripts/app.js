@@ -537,7 +537,7 @@ function initMap() {
       document.getElementById('right-panel-menu').style.visibility = "hidden";
       directionsDisplay.setMap(null);
     });
-  }
+  };
 }
 
 /**
