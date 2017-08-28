@@ -41,7 +41,7 @@
             <button id="hide-listings" data-bind="click: hideList" class="opt-buttons btn btn-primary" type="button"><span class="glyphicon glyphicon-map-marker"></span> Hide Listings</button>
             <hr>
             <button class="opt-buttons btn btn-primary" id="filter" type="button" data-bind="click: activateSearchByRating">Filter by rating</button>
-            <button class="opt-buttons btn btn-primary" id="reset" type="button" data-bind="click: clearValue">Reset Filters</button>
+            <button class="opt-buttons btn btn-primary" id="reset" type="button" data-bind="click: clearValue">Filter by Search</button>
             <br>
 
             <!-- slider to filter based on rating -->
@@ -50,7 +50,7 @@
             </div>
             <br>
 
-            <form class="form-horizontal">
+            <form class="form-horizontal" data-bind="{visible: textFilter}">
               <div class="search form-group">
                 <div class="col-xs-12">
                   <input type="text" class="form-control" placeholder="Search from list" data-bind="value: query, valueUpdate: 'keyup'" autocomplete="off">

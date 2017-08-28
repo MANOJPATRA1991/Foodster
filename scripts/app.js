@@ -156,6 +156,12 @@ function initMap() {
         hideMarkers(markers);
       };
 
+      // enable search by text
+      self.textFilter = ko.observable(false);
+
+      // enable search by rating
+      self.searchByRating = ko.observable(false);
+
       // An array of locations
       var locations = mapLocations;
 
@@ -166,6 +172,8 @@ function initMap() {
        * Shows the selected marker on the screen
        */
       self.showMarkerSelected = function(){
+        self.textFilter(false);
+        self.searchByRating(false);
         showMarker(locations.indexOf(this), largeInfowindow);
       };
 
@@ -176,20 +184,24 @@ function initMap() {
        * Hide all markers except default markers
        */
       self.clearValue = function() {
-         self.query('');
-         self.values([1, 10]);
-         hideMarkers(placeMarkers);
-         showListings(markers);
+        self.query('');
+        self.values([1, 10]);
+        hideMarkers(placeMarkers);
+        showListings(markers);
+        self.searchByRating(false);
+        self.textFilter(!self.textFilter());
       };
-
-      self.searchByRating = ko.observable(false);
 
       /**
        * This function activates search by rating
        */
       self.activateSearchByRating = function(){
-        self.clearValue();
+        self.query('');
+        self.values([1, 10]);
+        hideMarkers(placeMarkers);
+        showListings(markers);
         self.searchByRating(!self.searchByRating());
+        self.textFilter(false);
       };
 
       self.showFavPlaces = function(){
@@ -204,21 +216,6 @@ function initMap() {
           var search = self.query().toLowerCase();
           return ko.utils.arrayFilter(locations, function(location) {
               var index = locations.indexOf(location);
-
-              // Filter by both rating and text
-              if(self.searchByRating && search !== ""){
-                hideMarkers(placeMarkers);
-                if (location.rating >= self.values()[0] &&
-                    location.rating <= self.values()[1] &&
-                    location.title.toLowerCase().indexOf(search) >= 0){
-                    markers[index].setMap(map);
-                }else{
-                  markers[index].setMap(null);
-                }
-                return (location.rating >= self.values()[0] &&
-                        location.rating <= self.values()[1] &&
-                        location.title.toLowerCase().indexOf(search) >= 0);
-              }
 
               // Filter by text only
               if(search !== ""){
