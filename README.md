@@ -13,15 +13,19 @@ An interactive website to filter and search for restaurants in the city of Benga
 
 Features implemented in this project include:
 
-  1. Google Map Implementation
-  2. Use of Foursquare API to include information about a place
-  3. Use of Goole Directions API to display directions between default marker and various nearby places
-  4. Implementation of Firebase Authentication System
-  5. Enable Logged in users to add/delete places to their favorites list (to Firebase reat-time database)
+  1. [Google Map](https://developers.google.com/maps/) Implementation
+  2. Use of [FOURSQUARE](https://developer.foursquare.com/) API to include information about a place
+  3. Use of [Google Directions](https://developers.google.com/maps/documentation/directions/) API to display directions between default marker and various nearby places
+  4. Implementation of [FIREBASE](https://firebase.google.com/) Authentication System
+  5. Enable Logged in users to add/delete places to their favorites list (to [FIREBASE](https://firebase.google.com/docs/database/) real-time database)
   6. List based display of default markers
   7. Implementation of text based filters and rating sliding filters
   8. Show nearby places for a default marker
   
+##### To run this project in local environment:
+  1. Clone the repo.
+  2. Run `bower install` from within the project folder in cmd to install the dependencies.
+
 ### Reference
 
   1. [Bootstrap](http://getbootstrap.com/)
@@ -34,6 +38,7 @@ Features implemented in this project include:
   8. [KnockoutJS](http://knockoutjs.com/)
   9. [Knockout Postbox](https://github.com/rniemeyer/knockout-postbox)
   10. [Google Maps API](https://developers.google.com/maps/)
+  11. [JSHint](jshint.com)
   
 ### License
 
