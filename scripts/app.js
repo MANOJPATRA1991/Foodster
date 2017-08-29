@@ -16,6 +16,17 @@ var placeMarkers = [];
 // To store the infowindow instance
 var largeInfowindow = '';
 
+// To store places services instance
+var service = {};
+
+var directionsService = '';
+
+// Used to toggle the menu-panel
+var isClosed = false;
+
+// Used to toggle the photo panel
+var isClosedPhoto = false;
+
 /**
  * Initial function called once the Google map libraries are loaded
  */
@@ -56,10 +67,16 @@ function initMap() {
     map.mapTypes.set('styled_map', styledMapType);
     map.setMapTypeId('styled_map');
 
+    // Instantiate places service
+    service = new google.maps.places.PlacesService(map);
+
     // Instantiate info window with default width of 350px
     largeInfowindow = new google.maps.InfoWindow({
       maxWidth: 270
     });
+
+
+    directionsService = new google.maps.DirectionsService();
 
     // Style the markers to create our listing marker icon.
     var defaultIcon = makeMarkerIcon('0091ff');
@@ -348,20 +365,15 @@ function initMap() {
     // Display default markers on map on page load
     showListings(markers);
 
-    // Hide toggle menu on page load
-    $("#togglemenu").hide();
-
     /**
      *
-     * Effects for links on info window
+     * CSS EFFECTS FOR DOM ELEMENTS LINKED TO GOOGLE MAP
+     * INFO WINDOW
      *
      */
 
-    // Used to toggle the menu-panel
-    var isClosed = false;
-
-    // Used to toggle the photo panel
-    var isClosedPhoto = false;
+    // Hide toggle menu on page load
+    $("#togglemenu").hide();
 
     // Menu bar effects
     $(".menu-bar").click(function(){
@@ -391,79 +403,6 @@ function initMap() {
         $("#title").text("");
         isOpenMenu = false;
       }
-    });
-
-    // Get tips
-    $(document).on('click', '#get-tips', function(){
-      closeMenu(true);
-      $("#menu-panel").css("visibility", "hidden");
-      $("#photo-panel").css({"visibility": "hidden", "width": 0});
-      $("#close-photo-panel").css({"visibility": "hidden", "width": 0});
-      $("#left-panel").css('z-index', 300);
-      $("#left-panel").css({"opacity":0.0, "visibility": "visible"}).animate({
-        opacity: 1
-      }, {duration: 500, queue: false});
-      $("#left-panel").animate({
-        height: '80%'
-      }, {duration: 500, queue: false});
-      loadTips();
-    });
-
-    // Get more information
-    $(document).on('click', '#marker-more', function(){
-      closeMenu(true);
-      $("#photo-panel").css({"visibility": "hidden", "width": 0});
-      $("#close-photo-panel").css({"visibility": "hidden", "width": 0});
-      $("#left-panel").css({"visibility": "hidden"});
-      $("#menu-panel").css({"top": "0px", "overflow-y": "auto", 'z-index': 100, "visibility": "visible"});
-      $("#menu-panel").animate({
-        height: '80%'
-      }, 500);
-      isClosed = false;
-      loadData();
-    });
-
-    // Get Directions
-    $(document).on('click', '#get-directions', function(){
-      closeMenu(true);
-      var $getDirections = $('#get-directions');
-      var origin = $getDirections.data('origin');
-      var destination = $getDirections.data('destination');
-      $("#menu-panel").css("visibility", "hidden");
-      $("#photo-panel").css({"visibility": "hidden", "width": 0});
-      $("#close-photo-panel").css({"visibility": "hidden", "width": 0});
-      $("#left-panel").css({"visibility": "hidden"});
-      displayDirections(markers[origin].getPosition(), placeMarkers[destination].getPosition());
-    });
-
-    // Get nearby places
-    $(document).on('click', '#get-places', function(){
-      closeMenu(true);
-      $("#menu-panel").css("visibility", "hidden");
-      $("#photo-panel").css({"visibility": "hidden", "width": 0});
-      $("#close-photo-panel").css({"visibility": "hidden", "width": 0});
-      $("#left-panel").css({"visibility": "hidden"});
-      nearbySearchPlaces();
-    });
-
-    // Get images
-    $(document).on('click', '#get-images', function(){
-      closeMenu(true);
-      $("#left-panel").css({"visibility": "hidden"});
-      $("#menu-panel").css("visibility", "hidden");
-      $('#close-photo-panel').css({"visibility": "visible", 'right': 0, 'width': 0});
-      $('#close-photo-panel h1 span').removeClass("glyphicon-chevron-left");
-      $('#close-photo-panel h1 span').addClass("glyphicon-chevron-right");
-      $("#photo-panel").css({"width": 0, "visibility": "visible"});
-      $("#photo-panel").animate({
-        width: '220px'
-      }, {duration: 500, queue: false});
-      $('#close-photo-panel').animate({
-        width: '40px',
-        right: '220px'
-      }, {duration: 500, queue: false});
-      isClosedPhoto = false;
-      loadImages();
     });
 
     // Close the photo-panel
@@ -513,11 +452,6 @@ function initMap() {
         }, 500);
         isClosed = false;
       }
-    });
-
-
-    $("#left-panel").click(function(){
-      $("#left-panel").css('z-index', 300);
     });
 
     // Close the panel showing tips for the place
@@ -580,10 +514,6 @@ function hideInfoWindow(marker, infowindow){
  * @param {Object} infowindow The infowindow instance to open
  */
 function populateInfoWindow(marker, infowindow){
-  // If not largeInfowindow, close any open largeInfowindow
-  if(infowindow !== largeInfowindow){
-    largeInfowindow.close();
-  }
   // Check to make sure the infowindow is not already opened on this marker.
   if(infowindow.marker != marker){
     infowindow.marker = marker;
@@ -626,9 +556,87 @@ function populateInfoWindow(marker, infowindow){
     // When the <div> containing the InfoWindow's content is attached to the DOM
     // run the callback function
     infowindow.addListener('domready', function(){
+      google.maps.event.clearInstanceListeners(document.getElementById('get-tips'));
+      google.maps.event.clearInstanceListeners(document.getElementById('marker-more'));
+      google.maps.event.clearInstanceListeners(document.getElementById('get-images'));
+
       $iw.prev().children(':nth-child(2)').css('display', 'none');
       $iw.prev().children(':nth-child(4)').css({'display' : 'none'});
       $iw.next().css({'zIndex': '100', right: '60px', top: '20px'});
+
+      if(markers.indexOf(marker) !== -1 && document.getElementById('get-places')){
+        // Get nearby places
+        google.maps.event.addDomListener(
+          document.getElementById('get-places'),
+          'click', function(){
+          closeMenu(true);
+          $("#menu-panel").css("visibility", "hidden");
+          $("#photo-panel").css({"visibility": "hidden", "width": 0});
+          $("#close-photo-panel").css({"visibility": "hidden", "width": 0});
+          $("#left-panel").css({"visibility": "hidden"});
+          nearbySearchPlaces($("#marker-more").data('id'));
+        });
+      }
+
+      // Get the latLng and name of the marker to load information
+      var lat_lng  = marker.getPosition().toString();
+      var name = marker.title;
+
+      // Get tips
+      google.maps.event.addDomListener(
+          document.getElementById('get-tips'),
+          'click', function(){
+        closeMenu(true);
+        $("#menu-panel").css("visibility", "hidden");
+        $("#photo-panel").css({"visibility": "hidden", "width": 0});
+        $("#close-photo-panel").css({"visibility": "hidden", "width": 0});
+        $("#left-panel").css('z-index', 300);
+        $("#left-panel").css({"opacity":0.0, "visibility": "visible"}).animate({
+          opacity: 1
+        }, {duration: 500, queue: false});
+        $("#left-panel").animate({
+          height: '80%'
+        }, {duration: 500, queue: false});
+        loadTips(lat_lng, name);
+      });
+
+      // Get more information
+      google.maps.event.addDomListener(
+          document.getElementById('marker-more'),
+          'click', function(){
+        closeMenu(true);
+        $("#photo-panel").css({"visibility": "hidden", "width": 0});
+        $("#close-photo-panel").css({"visibility": "hidden", "width": 0});
+        $("#left-panel").css({"visibility": "hidden"});
+        $("#menu-panel").css({"top": "0px", "overflow-y": "auto", 'z-index': 100, "visibility": "visible"});
+        $("#menu-panel").animate({
+          height: '80%'
+        }, 500);
+        isClosed = false;
+        loadData(lat_lng, name);
+      });
+
+      // Get images
+      google.maps.event.addDomListener(
+          document.getElementById('get-images'),
+          'click', function(){
+        closeMenu(true);
+        $("#left-panel").css({"visibility": "hidden"});
+        $("#menu-panel").css("visibility", "hidden");
+        $('#close-photo-panel').css({"visibility": "visible", 'right': 0, 'width': 0});
+        $('#close-photo-panel h1 span').removeClass("glyphicon-chevron-left");
+        $('#close-photo-panel h1 span').addClass("glyphicon-chevron-right");
+        $("#photo-panel").css({"width": 0, "visibility": "visible"});
+        $("#photo-panel").animate({
+          width: '220px'
+        }, {duration: 500, queue: false});
+        $('#close-photo-panel').animate({
+          width: '40px',
+          right: '220px'
+        }, {duration: 500, queue: false});
+        isClosedPhoto = false;
+        loadImages(lat_lng, name);
+      });
     });
 
     // Make sure the marker property is cleared if the infowindow is closed.
@@ -729,7 +737,6 @@ function makeMarkerIcon(markerColor){
  * @returns {Object} The markerImage object
  */
 function displayDirections(origin, destination){
-  var directionsService = new google.maps.DirectionsService();
   // Get mode again from the user entered value.
   var request = {
     // The origin is the passed in marker's position.
@@ -768,9 +775,8 @@ function displayDirections(origin, destination){
  * of the default markers . This will display the nearby restaurants within a radius of 500
  * on the map.
  */
-function nearbySearchPlaces(){
-  var $markerMore = $("#get-places").siblings("#marker-more");
-  var centeredMarker = markers[$markerMore.data("id")];
+function nearbySearchPlaces(id){
+  var centeredMarker = markers[id];
   var lat_lng = centeredMarker.getPosition();
   var request = {
     location: lat_lng,
@@ -779,26 +785,39 @@ function nearbySearchPlaces(){
   };
   hideInfoWindow(centeredMarker, largeInfowindow);
   map.setCenter(lat_lng);
-  var nearInfo = new google.maps.InfoWindow({
-    maxWidth: 270
-  });
 
   /**
    * Set content for info window of nearby places
    */
   var setNearInfo = function(){
       this.setAnimation(google.maps.Animation.BOUNCE);
-      populateInfoWindow(this, nearInfo);
+      populateInfoWindow(this, largeInfowindow);
       if($("#get-directions").length === 0){
-        nearInfo.setContent(nearInfo.getContent() +
+        largeInfowindow.setContent(largeInfowindow.getContent() +
         '<div class="m-title"><button data-origin="' +
         centeredMarker.id +
         '" data-destination="' + placeMarkers.indexOf(this) + '" id="get-directions"' +
         '" class="btn btn-xs btn-primary">Show Directions</button></div>');
       }
+      largeInfowindow.addListener('domready', function(){
+        // Get Directions
+        google.maps.event.clearInstanceListeners(document.getElementById('get-directions'));
+        google.maps.event.addDomListenerOnce(
+            document.getElementById('get-directions'),
+            'click', function(){
+          closeMenu(true);
+          var $getDirections = $('#get-directions');
+          var origin = $getDirections.data('origin');
+          var destination = $getDirections.data('destination');
+          $("#menu-panel").css("visibility", "hidden");
+          $("#photo-panel").css({"visibility": "hidden", "width": 0});
+          $("#close-photo-panel").css({"visibility": "hidden", "width": 0});
+          $("#left-panel").css({"visibility": "hidden"});
+          displayDirections(markers[origin].getPosition(), placeMarkers[destination].getPosition());
+        });
+      });
   };
 
-  service = new google.maps.places.PlacesService(map);
   service.nearbySearch(request, function callback(results, status) {
     if (status == google.maps.places.PlacesServiceStatus.OK) {
       // Hide previous nearby markers

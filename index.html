@@ -90,8 +90,8 @@
           </div>
       </aside>
 
-      <section id="menu-panel">
-        <article>
+      <section>
+        <article id="menu-panel">
           <span id='venue-detail-menu' class='glyphicon glyphicon-chevron-up'></span>
           <span id='menu-panel-heading' data-bind="visible: error() !== true">
             <div class='main-title'>
@@ -153,13 +153,13 @@
       </aside>
 
       <!-- User Tips -->
-      <section id="left-panel">
-        <article>
+      <section>
+        <article id="left-panel">
           <h2><span id="close-reviews" class='glyphicon glyphicon-remove'></span>Users Tips</h2>
           <hr>
           <div id="venue-tips" data-bind="{visible: error() !== true, foreach: tips}">
             <venue-tips-template params="value: $data"></venue-tips-template>
-            <hr>
+            <br/>
           </div>
           <div id="message" data-bind="visible: error">
             <p data-bind="text: message"></p>

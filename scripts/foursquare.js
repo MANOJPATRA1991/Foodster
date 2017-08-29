@@ -1,15 +1,15 @@
 // foursquare client id
-var FOURSQUARE_CLIENT_ID = "41PGT0MW5WP2YLYOMO5GVVLOSXY31V1CP45PCHAWQDNRHI4I";
+var FOURSQUARE_CLIENT_ID = "F1E2HZDPZGHKNSK54DWPNAPW3ADHKL0V0IBHLD1ZN1KPMJNG";
 
 // foursquare client secret
-var FOURSQUARE_CLIENT_SECRET = "13ETNO1CLGHIOTSPJCUWX0KJ2IE1M3BBW5ZM0PN5530HWMSZ";
+var FOURSQUARE_CLIENT_SECRET = "2HTYTSWFTZUS144ABHWAHAQLVCGQMHTKIONLROWJHOVJCOOF";
 
 
 /**
  * This function loads data from the FOURSQUARE API
  */
-function loadData(){
-  var fourSquareUrl = fourSquare();
+function loadData(lat_lng, name){
+  var fourSquareUrl = fourSquare(lat_lng, name);
   var venue = {};
   venueDataInstance.resetObservables();
   $.getJSON(fourSquareUrl)
@@ -20,9 +20,11 @@ function loadData(){
       getVenueData(venue);
     })
     .fail(function(err){
-      venueDataInstance.error(true);
-      venueDataInstance.message('The data cannot be loaded. Check your connection or ' +
-        'try again after some time.');
+      setTimeout(function() {
+        venueDataInstance.error(true);
+        venueDataInstance.message('The data cannot be loaded. Check your connection or ' +
+          'try again after some time.');
+      }, 8000);
     });
     return false;
 }
@@ -120,8 +122,8 @@ function returnVenue(data){
 /**
  * This function when called loads images for a venue
  */
-function loadImages(){
-  var fourSquareUrl = fourSquare();
+function loadImages(lat_lng, name){
+  var fourSquareUrl = fourSquare(lat_lng, name);
   var venue = {};
   $.getJSON(fourSquareUrl)
     .done(function(data){
@@ -131,9 +133,11 @@ function loadImages(){
       venueDetails(venue.id, 'image');
     })
     .fail(function(err){
+      setTimeout(function() {
         venueImagesInstance.error(true);
         venueImagesInstance.message('The data cannot be loaded. Check your connection or' +
           ' try again after some time.');
+      }, 8000);
     });
     return false;
 }
@@ -171,8 +175,8 @@ function returnVenueImage(data){
 /**
  * This function when called loads the user tips for a venue
  */
-function loadTips(){
-  var fourSquareUrl = fourSquare();
+function loadTips(lat_lng, name){
+  var fourSquareUrl = fourSquare(lat_lng, name);
   var venue = {};
   $.getJSON(fourSquareUrl)
     .done(function(data){
@@ -182,9 +186,11 @@ function loadTips(){
       venueTips(venue.id);
     })
     .fail(function(err){
+      setTimeout(function() {
         venueTipsInstance.error(true);
         venueTipsInstance.message('The data cannot be loaded. Check your connection or' +
           ' try again after some time.');
+      }, 8000);
     });
     return false;
 }
@@ -224,9 +230,11 @@ function venueTips(venueId){
     }
   })
   .fail(function(err){
-    venueTipsInstance.error(true);
-    venueTipsInstance.message('The data cannot be loaded. Check your connection or' +
-      ' try again after some time.');
+    setTimeout(function() {
+      venueTipsInstance.error(true);
+      venueTipsInstance.message('The data cannot be loaded. Check your connection or' +
+        ' try again after some time.');
+    }, 8000);
   });
   return false;
 }
@@ -235,12 +243,10 @@ function venueTips(venueId){
 /**
  * This function makes initial call to the FOURSQUARE API
  */
-function fourSquare(){
-  var $markerMore = $("#marker-more");
-
-  var lat_lng = $markerMore.data("position").toString();
+function fourSquare(latLng, locName){
+  var lat_lng = latLng;
   lat_lng = lat_lng.substr(1, lat_lng.length - 2);
-  var name = $markerMore.data("title");
+  var name = locName;
 
   var fourSquareUrl = "https://api.foursquare.com/v2/venues/search";
   fourSquareUrl += '?' + $.param({
@@ -277,9 +283,11 @@ function venueDetails(venueId, choice){
     }
   })
   .fail(function(err){
-    venueDataInstance.error(true);
-    venueDataInstance.message('The data cannot be loaded. Check your connection or ' +
-     'try again after some time.');
+    setTimeout(function() {
+      venueDataInstance.error(true);
+      venueDataInstance.message('The data cannot be loaded. Check your connection or ' +
+       'try again after some time.');
+    }, 8000);
   });
   return false;
 }
