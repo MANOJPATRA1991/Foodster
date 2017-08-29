@@ -35,6 +35,9 @@ function initMap() {
   $.getJSON('http://localhost:8000/json/app.json')
   .done(function(data){
     mapLoad(data[0], data[1]);
+  })
+  .fail(function(err){
+    window.alert("Application failed to load default markers.");
   });
 
   var mapLoad = function (mapStyle, mapLocations){
