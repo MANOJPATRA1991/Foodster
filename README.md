@@ -27,7 +27,7 @@ Features implemented in this project include:
   2. Run `bower install` from within the project folder in cmd to install the dependencies.
   3. Install **simplehttpserver** with the following command to run the project locally:
       `npm install simplehttpserver -g`
-  4. Also, check your host and port number and if they are different from **localhost** and **8000** (default), change them at respective places in **app.js** file.
+  4. Also, check your host and port number and if they are different from **localhost** and **8000** (default), change them at respective places in **app.js** as well as in **models.js** files.
   5. Move into your project directory and run `simplehttpserver` from the command line.
   5. Now open **http://localhost:8000/** from any web browser or simply double click on index.html to open the project in the browser.
     > The simplehttpserver is required to load the json files.
