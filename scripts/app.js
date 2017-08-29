@@ -301,45 +301,49 @@ function initMap() {
       }, self);
 
       // Add favorite lat-lng to database if user is logged in
-      $(document).on('click', '#favorites', function(){
-        if(self.userId() !== undefined){
-          var favPos = $("#favorites").data("link");
-          var title = $("#favorites").data("title");
-          // Get the latitude
-          var lat = favPos.substring(favPos.lastIndexOf("(")+1,favPos.lastIndexOf(","));
+      largeInfowindow.addListener('domready', function(){
+        google.maps.event.addDomListener(
+          document.getElementById('favorites'),
+          'click', function(){
+          if(self.userId() !== undefined){
+            var favPos = $("#favorites").data("link");
+            var title = $("#favorites").data("title");
+            // Get the latitude
+            var lat = favPos.substring(favPos.lastIndexOf("(")+1,favPos.lastIndexOf(","));
 
-          // Get the longitude
-          var lng = favPos.substring(favPos.lastIndexOf(",")+2,favPos.lastIndexOf(")"));
+            // Get the longitude
+            var lng = favPos.substring(favPos.lastIndexOf(",")+2,favPos.lastIndexOf(")"));
 
-          // Get a reference to the database service
-          var data = {
-            title: title,
-            lat: lat,
-            lng: lng
-          };
+            // Get a reference to the database service
+            var data = {
+              title: title,
+              lat: lat,
+              lng: lng
+            };
 
-          var updates = {};
+            var updates = {};
 
-          // listen to firebase data on click
-          firebase.database().ref().child('/users/' + self.userId() + '/favorites/').once('value', function(snap){
-            // remove data if it exists in the database
-            if(snap.hasChild(data.title)) {
-              updates = {};
-              updates['/users/' + self.userId() + '/favorites/' + data.title] = null;
-              firebase.database().ref().update(updates);
-              self.alert(data.title + " removed from your favorites");
-            }else{
-              // add data to database if it doesn't already exist
-              updates = {};
-              updates['/users/' + self.userId() + '/favorites/' + data.title] = data;
-              firebase.database().ref().update(updates);
-              self.alert(data.title + " added to your favorites");
-            }
-            self.fade(true);
-          });
-        }else{
-          $("#log-in-modal").modal('show');
-        }
+            // listen to firebase data on click
+            firebase.database().ref().child('/users/' + self.userId() + '/favorites/').once('value', function(snap){
+              // remove data if it exists in the database
+              if(snap.hasChild(data.title)) {
+                updates = {};
+                updates['/users/' + self.userId() + '/favorites/' + data.title] = null;
+                firebase.database().ref().update(updates);
+                self.alert(data.title + " removed from your favorites");
+              }else{
+                // add data to database if it doesn't already exist
+                updates = {};
+                updates['/users/' + self.userId() + '/favorites/' + data.title] = data;
+                firebase.database().ref().update(updates);
+                self.alert(data.title + " added to your favorites");
+              }
+              self.fade(true);
+            });
+          }else{
+            $("#log-in-modal").modal('show');
+          }
+        });
       });
     }
 
